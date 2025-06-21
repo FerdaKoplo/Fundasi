@@ -12,19 +12,19 @@ actor Main {
   stable var stableUser: [User.User] = [] : [User.User];
   var userMap : HashMap.HashMap<Principal, User.User> = HashMap.HashMap(0, Principal.equal, Principal.hash);
 
+  for (user in stableUser.vals()) {
+    userMap.put(user.id, user);
+  };
+
+  system func preupgrade() {
+     stableUser := Iter.toArray(userMap.vals());
+  };
+
+  system func postupgrade() {
     for (user in stableUser.vals()) {
-      userMap.put(user.id, user);
-    };
-
-    system func preupgrade() {
-        stableUser := Iter.toArray(userMap.vals());
-    };
-
-    system func postupgrade() {
-        for (user in stableUser.vals()) {
         userMap.put(user.id, user);
-       };
-        stableUser := [];
+      };
+      stableUser := [];
     };
 
    public shared(msg) func registerUser(username : Text) : async Result.Result<User.User, Text> {
@@ -47,4 +47,13 @@ actor Main {
       let caller = msg.caller;
       return UserService.getCurrentUser(stableUser, caller);
   };
+
+  public query func getUserProfileById(userId : Principal) : async ?User.User {
+    return UserService.getCurrentUser(stableUser, userId);
+  };
+
+  public query func getUserProfileByUsername(username : Text) : async ?User.User {
+    return UserService.getUserByUsername(userMap, username);
+};
+
 };
