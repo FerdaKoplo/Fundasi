@@ -1,15 +1,11 @@
+// src/components/auth/AuthCard.tsx
 import React from 'react';
-import { useAuth } from '../hooks/useAuth';
+import { useAuth } from '../../hooks/useAuth';
+import LoginButton from './LoginButton';
+import LogoutButton from './LogoutButton';
 
-const loginICP: React.FC = () => {
-  const {
-    user,
-    isAuthenticated,
-    isLoading,
-    error,
-    login,
-    logout,
-  } = useAuth();
+const AuthCard: React.FC = () => {
+  const { user, isAuthenticated, isLoading, error, login, logout } = useAuth();
 
   if (isLoading) return <p className="text-gray-500">Loading...</p>;
   if (error) return <p className="text-red-500">Error: {error}</p>;
@@ -26,12 +22,7 @@ const loginICP: React.FC = () => {
   return (
     <div className="p-4 border rounded shadow bg-white">
       {!isAuthenticated ? (
-        <button
-          onClick={login}
-          className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
-        >
-          Login with Internet Identity
-        </button>
+        <LoginButton onClick={login} />
       ) : (
         <div>
           <h2 className="text-xl font-semibold mb-2">
@@ -49,17 +40,11 @@ const loginICP: React.FC = () => {
             <li><strong>Completed Campaigns:</strong> {completedCampaigns}</li>
             <li><strong>Created At:</strong> {createdAt}</li>
           </ul>
-
-          <button
-            onClick={logout}
-            className="mt-4 bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700"
-          >
-            Logout
-          </button>
+          <LogoutButton onClick={logout} />
         </div>
       )}
     </div>
   );
 };
 
-export default loginICP;
+export default AuthCard;

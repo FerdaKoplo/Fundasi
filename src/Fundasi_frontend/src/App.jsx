@@ -1,11 +1,11 @@
 import React from 'react';
-import loginICP from "./components/loginICP";
+import AuthCard from './components/auth/AuthCard';
 
 function App() {
 
   return (
     <>
-      <loginICP />
+      <AuthCard />
     </>
   );
 }
