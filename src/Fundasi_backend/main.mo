@@ -62,7 +62,6 @@ actor Main {
        return UserService.getUserByUsername(userMap, username);
      };
 
-
      // Campaign 
      public shared(msg) func addCampaign(newCampaign : Campaign.Campaign) : async Result.Result<Campaign.Campaign, Text> {
          CampaignService.addCampaign(campaignMap, msg.caller, newCampaign);
