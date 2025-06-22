@@ -43,8 +43,14 @@ actor Main {
     };
   };
 
+  
+
   public shared(msg) func getUserProfile() : async ?User.User {
       let caller = msg.caller;
       return UserService.getCurrentUser(stableUser, caller);
+  };
+
+  public query func getUserByPrincipal(p : Principal) : async ?User.User {
+    return UserService.getUserByPrincipal(userMap, p);
   };
 };
