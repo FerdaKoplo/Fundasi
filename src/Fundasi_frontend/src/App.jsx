@@ -1,8 +1,11 @@
+import React from "react";
+import MicroBusinessList from "./pages/user/campaigns/listcampaign";
+
 function App() {
 
   return (
     <>
-      <h1 className="text-red-500">test</h1>
+        <MicroBusinessList />
     </>
   );
 }

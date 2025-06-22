@@ -1,3 +1,9 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer utilities {
+  .green-gradient {
+    @apply bg-gradient-to-r from-[#398267] to-[#A5CC86] bg-clip-text text-transparent;
+  }
+}
