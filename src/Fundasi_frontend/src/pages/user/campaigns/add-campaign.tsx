@@ -55,7 +55,8 @@ const AddCampaign = () => {
     reader.readAsDataURL(file);
   }
 
-  const handleAddCampaign = async () => {
+  const handleAddCampaign = async (e : React.FormEvent) => {
+    e.preventDefault()
     const campaignData = {
       title: title || '',
       description: description || '',
@@ -116,6 +117,13 @@ const AddCampaign = () => {
                 <input className="black-gradient  text-gray-100 rounded-lg p-3 w-full" value={title} placeholder="Title" onChange={(e) => setTitle(e.target.value)}/>
                 <textarea className="black-gradient  text-gray-100 rounded-lg p-3 w-full" value={description} placeholder="Description" onChange={(e) => setDescription(e.target.value)}/>
                 <input className="black-gradient  text-gray-100 rounded-lg p-3 w-full" accept="image/*" type="file" onChange={handleImageChange} />
+                {media.imageUrl[0] && (
+                  <img
+                  src={media.imageUrl[0]}
+                  alt="Campaign Preview"
+                  className="w-48 rounded-lg mt-3"
+                  />
+                )}
                 <input
                   className="black-gradient text-gray-100 rounded-lg p-3 w-full"
                   placeholder="Milestone (e.g., Max NFT quantity)"
@@ -123,13 +131,6 @@ const AddCampaign = () => {
                   onChange={(e) => setMilestone(e.target.value)}
                   type="number"
                 />
-                {media.imageUrl[0] && (
-                  <img
-                    src={media.imageUrl[0]}
-                    alt="Campaign Preview"
-                    className="w-48 rounded-lg mt-3"
-                  />
-                )}
               </div>
             </div>
 
