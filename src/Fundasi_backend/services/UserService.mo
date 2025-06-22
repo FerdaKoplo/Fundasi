@@ -44,6 +44,10 @@ module {
         return UserRepository.getUser(users, caller);
     };
 
+    public func getUserByPrincipal(users : User.Users, principal : Principal) : ?User.User {
+    return users.get(principal);
+};
+
     public func getUserByUsername(users : User.Users, username : Text) : ?User.User {
         for ((principal, user) in users.entries()) {
             if (user.username == username) {
