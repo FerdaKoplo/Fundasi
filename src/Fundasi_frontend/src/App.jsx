@@ -1,11 +1,12 @@
 import React from "react";
-import MicroBusinessList from "./pages/user/campaigns/listcampaign";
+
+import UserProfile from "./pages/user/profile/profileAbout";
 
 function App() {
 
   return (
     <>
-        <MicroBusinessList />
+        <UserProfile />
     </>
   );
 }

@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import Navbar from "../../../components/Navbar";
 
 interface MicroBusiness {
   id: string;
@@ -54,27 +55,8 @@ export default function MicroBusinessList() {
   );
 
   return (
-    <div className="min-h-screen bg-black text-white px-6 py-10">
-      <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold green-gradient">Fundasi</h1>
-        <div className="relative w-full max-w-lg mx-10">
-  <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-    <svg className="w-5 h-5 text-white opacity-60" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-      <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-4.35-4.35m0 0A7.5 7.5 0 104.5 4.5a7.5 7.5 0 0012.15 12.15z" />
-    </svg>
-  </div>
-  <input
-    type="text"
-    placeholder="Search microbusiness, authors"
-    className="w-full pl-10 pr-4 py-2 rounded-full text-white placeholder-white/60 focus:outline-none bg-gradient-to-r from-white to-[#2D2D2D] bg-opacity-20"
-    value={search}
-    onChange={(e) => setSearch(e.target.value)}
-  />
-</div>
-        <div className="w-8 h-8 rounded-full border border-green-400 flex items-center justify-center">
-          <div className="w-5 h-5 bg-green-400 rounded-full"></div>
-        </div>
-      </div>
+    <div className="min-h-screen bg-black text-white px-6 py-10 relative">
+      <Navbar search={search} setSearch={setSearch}/>
 
       <p className="text-white text-lg font-medium">
         {businesses.length.toLocaleString()} <span className="text-primary-light">MicroBusiness</span>
@@ -91,21 +73,41 @@ export default function MicroBusinessList() {
               />
               {biz.score >= 0 ? (
                 <div className="absolute -top-5 -left-3 w-12 h-12 rounded-full p-1 bg-gradient-to-r from-[#398267] to-[#A5CC86]">
-  <div className="w-full h-full rounded-full flex items-center justify-center bg-black text-white font-bold text-sm">
-    {biz.score}
-  </div>
-</div>
+                  <div className="w-full h-full rounded-full flex items-center justify-center bg-black text-white font-bold text-sm">
+                    {biz.score}
+                  </div>
+                </div>
               ) : (
                 <div className="absolute -top-5 -left-3 w-12 h-12 rounded-full p-1 bg-gradient-to-r from-[#CCB386] to-[#823939]">
-  <div className="w-full h-full rounded-full flex items-center justify-center bg-black text-white font-bold text-sm">
-    {biz.score}
-  </div>
-</div>
+                  <div className="w-full h-full rounded-full flex items-center justify-center bg-black text-white font-bold text-sm">
+                    {biz.score}
+                  </div>
+                </div>
               )}
             </div>
             <div className="p-4">
-              <h2 className="text-white font-semibold text-base">{biz.title}</h2>
-              <p className="text-sm text-gray-400 mb-2">{biz.author}</p>
+              <div className="flex items-center justify-between mb-2">
+                <div className="flex items-center gap-2">
+                  <div className="w-8 h-8 bg-gray-700 rounded-full flex items-center justify-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="white" viewBox="0 0 24 24" className="w-5 h-5">
+                      <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" />
+                    </svg>
+                  </div>
+                  <div>
+                    <h2 className="text-white font-semibold text-base">{biz.title}</h2>
+                    <p className="text-sm text-gray-400">{biz.author}</p>
+                  </div>
+                </div>
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" className="w-12 h-14">
+                  <defs>
+                    <linearGradient id="green-gradient" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stopColor="#398267" />
+                      <stop offset="100%" stopColor="#A5CC86" />
+                    </linearGradient>
+                  </defs>
+                  <path fill="url(#green-gradient)" d="M6 4a2 2 0 0 0-2 2v14l8-4 8 4V6a2 2 0 0 0-2-2H6z" />
+                </svg>
+              </div>
               <div className="flex items-center text-sm text-white gap-2">
                 <span className="font-bold">{biz.daysLeft} days left</span>
                 <span className="text-white/60">• {biz.funded}% funded</span>
