@@ -54,10 +54,6 @@ actor Main {
          return UserService.getCurrentUser(stableUser, caller);
      };
 
-     public query func getUserProfileById(userId : Principal) : async ?User.User {
-       return UserService.getCurrentUser(stableUser, userId);
-     };
-
      public query func getUserProfileByUsername(username : Text) : async ?User.User {
        return UserService.getUserByUsername(userMap, username);
      };
@@ -81,5 +77,9 @@ actor Main {
      public shared(msg) func getDetailCampaign() : async ?Campaign.Campaign {
           campaignMap.get(msg.caller);
      };
+  
 
+  public query func getUserByPrincipal(p : Principal) : async ?User.User {
+    return UserService.getUserByPrincipal(userMap, p);
+  };
 };
