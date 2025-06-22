@@ -20,7 +20,7 @@ const AuthCard: React.FC = () => {
     : 'N/A';
 
   return (
-    <div className="p-4 border rounded shadow bg-white">
+    <div >
       {!isAuthenticated ? (
         <LoginButton onClick={login} />
       ) : (

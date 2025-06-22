@@ -1,12 +1,12 @@
 import React from 'react';
-import AuthCard from './components/auth/AuthCard';
+import AuthPage from './pages/user/auth/AuthPage';
 
 function App() {
 
   return (
-    <>
-      <AuthCard />
-    </>
+    <div className="bg-black w-full h-screen">
+        <AuthPage />
+    </div>
   );
 }
 
