@@ -1,15 +1,14 @@
 
 import React from "react";
-import MicroBusinessList from "./pages/user/campaigns/listcampaign";
-import loginICP from "./components/loginICP";
 
-import UserProfile from "./pages/user/profile/profileAbout";
+
+import WhyUseUs from "./pages/landing/whyUseus";
 
 function App() {
 
   return (
     <>
-        <MicroBusinessList />
+        <WhyUseUs />
     </>
   );
 }
