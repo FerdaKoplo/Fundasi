@@ -2,6 +2,7 @@ import Principal "mo:base/Principal";
 import Text "mo:base/Text";
 import HashMap "mo:base/HashMap";
 import Nat "mo:base/Nat";
+import Int "mo:base/Int";
 import User "User";
 import Review "Review";
 module {
@@ -15,7 +16,8 @@ module {
         media : CampaignMedia;
         rewards : [Rewards];
         about : [AboutCampaign];
-        review : ?Review.Review
+        review : ?Review.Review;
+        endTime : Int
     };
 
     public type CampaignStats = {
