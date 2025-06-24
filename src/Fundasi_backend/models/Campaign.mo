@@ -6,8 +6,9 @@ import Int "mo:base/Int";
 import User "User";
 import Review "Review";
 module {
-    public type Campaigns = HashMap.HashMap<Principal, Campaign>;
+    public type Campaigns = HashMap.HashMap<Nat, Campaign>;
     public type Campaign = {
+        id : Nat;
         description : Text;
         title : Text;
         milestone : Nat;
@@ -36,7 +37,7 @@ module {
     // };
 
     public type CampaignMedia = {
-        imageUrl : ?Text
+        imageUrl : [Text]
     };
 
     public type Rewards =  {
@@ -45,10 +46,12 @@ module {
         quantity : Nat;
         description : Text;
         estimatedDelivery : ?Text;
+        priceNFT : Nat;
     };
 
     public type AboutCampaign = {
         titleAbout : ?Text;
+        imageUrl : [Text];
         content : ?Text;
         section : ?Text
     }

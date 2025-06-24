@@ -1,6 +1,8 @@
 import React from "react";
 import MicroBusinessList from "./pages/user/campaigns/listcampaign";
-import loginICP from "./components/loginICP";
+import LoginPage from "./pages/user/auth/login-page";
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import DetailCampaign from "./pages/user/campaigns/detail-campaign";
 
 function App() {
   return (
@@ -10,7 +12,7 @@ function App() {
           <Route path="/login" element={<LoginPage />} />
           <Route path="/add-campaign" element={<AddCampaign />} />
           <Route path="/campaigns" element={<MicroBusinessList />} />
-          <Route path="/campaign/:ownerId"   element={<MicroBusinessList />} />
+          <Route path="/campaign/:id" element={<DetailCampaign />} />
         </Routes>
       </Router>
     </>
