@@ -37,7 +37,7 @@ module {
     // };
 
     public type CampaignMedia = {
-        imageUrl : ?Text
+        imageUrl : [Text]
     };
 
     public type Rewards =  {
@@ -50,6 +50,7 @@ module {
 
     public type AboutCampaign = {
         titleAbout : ?Text;
+        imageUrl : [Text];
         content : ?Text;
         section : ?Text
     }
