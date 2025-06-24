@@ -15,7 +15,7 @@ const AddCampaign = () => {
     { titleAbout: '', content: '', section: '', imageUrl: [] as string[] },
   ]);
   const [rewards, setRewards] = useState([
-    { level: '', quantity: '', description: '', estimatedDelivery: '' },
+    { level: '', quantity: '', description: '', estimatedDelivery: '', nftPrice: '' },
   ]);
 
   const handleAddMedia = () => {
@@ -24,7 +24,6 @@ const AddCampaign = () => {
       { imageUrl: [] }
     ])
   }
-
   const handleAddAbout = () => {
     setAboutSections([
       ...aboutSections,
@@ -34,7 +33,7 @@ const AddCampaign = () => {
   const handleAddReward = () => {
     setRewards([
       ...rewards,
-      { level: '', quantity: '', description: '', estimatedDelivery: '' },
+      { level: '', quantity: '', description: '', estimatedDelivery: '', nftPrice: '' },
     ]);
   };
   const handleAboutChange = (index: number, field: string, value: string) => {
@@ -120,7 +119,8 @@ const AddCampaign = () => {
           estimatedDelivery: r.estimatedDelivery
             ? [r.estimatedDelivery] as [string]
             : [] as [],
-          imageUrl: [] as []
+          imageUrl: [] as [],
+          nftPrice: BigInt(parseInt(r.nftPrice) || 0)
         };
       }),
       about: aboutSections.map((a) => {
@@ -132,7 +132,7 @@ const AddCampaign = () => {
         };
       }),
       review: [] as [],
-      endTime: BigInt(Math.floor((Date.now() / 1000) + 60 * 24 * 60 * 60))
+      endTime: BigInt(Math.floor((Date.now() / 1000) + 60 * 24 * 60 * 60)),
     };
     const result = await fetchAddCampaign(campaignData);
     console.log(result);
@@ -264,6 +264,12 @@ const AddCampaign = () => {
                       placeholder="Level"
                       value={r.level}
                       onChange={(e) => handleRewardChange(index, 'level', e.target.value)}
+                    />
+                    <input
+                      className="black-gradient text-gray-100 rounded-lg p-3 w-full"
+                      placeholder="NFT Price (in ICP)"
+                      value={r.nftPrice}
+                      onChange={(e) => handleRewardChange(index, 'nftPrice', e.target.value)}
                     />
                     <input
                       className="black-gradient text-gray-100 rounded-lg p-3 w-full"

@@ -94,4 +94,35 @@ actor Main {
   public query func getUserByPrincipal(p : Principal) : async ?User.User {
     return UserService.getUserByPrincipal(userMap, p);
   };
+
+  // User Trust Points
+  public shared(_) func upvoteUser(userId : Principal, points : Nat) : async Result.Result<User.User, Text> {
+      let result = UserService.postUpvote(userMap, userId, points);
+      switch (result) {
+          case (?updatedUser) {
+              userMap.put(userId, updatedUser);
+              stableUser := Array.filter<User.User>(stableUser, func(u) { u.id != userId });
+              stableUser := Array.append(stableUser, [updatedUser]);
+              return #ok(updatedUser);
+          };
+          case (null) {
+              return #err("User not found");
+          };
+      };
+  };
+  
+  public shared(_) func devoteUser(userId : Principal, points : Nat) : async Result.Result<User.User, Text> {
+      let result = UserService.postDevote(userMap, userId, points);
+      switch (result) {
+          case (?updatedUser) {
+              userMap.put(userId, updatedUser);
+              stableUser := Array.filter<User.User>(stableUser, func(u) { u.id != userId });
+              stableUser := Array.append(stableUser, [updatedUser]);
+              return #ok(updatedUser);
+          };
+          case (null) {
+              return #err("User not found");
+          };
+      };
+  };
 };

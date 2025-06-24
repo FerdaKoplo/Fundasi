@@ -6,6 +6,7 @@ import { ImCross } from "react-icons/im";
 import SidebarAbout from '../../../components/sidebar/sidebar-about';
 import NavCampaign from '../../../components/nav/campaign/nav-campaign';
 import About from '../../../components/detail_campaign_pages/about';
+import Author from '../../../components/detail_campaign_pages/author';
 
 const DetailCampaign = () => {
 
@@ -35,7 +36,7 @@ const DetailCampaign = () => {
 
 
   return (
-    <div className="bg-black space-y-10 px-32 text-white min-h-screen p-10">
+    <div className="bg-black space-y-12 px-32 text-white min-h-screen p-10">
       <h1 className="text-3xl font-bold text-center mb-4">Campaign {campaign?.title}</h1>
       <p className="text-center mb-6">{campaign?.description}</p>
       <div className="flex flex-col md:flex-row gap-10">
@@ -123,8 +124,11 @@ const DetailCampaign = () => {
           </div>
         </div>
       )}
+      
       {activeTab === 'author' && (
-        <div>{/* Render Author section here */}</div>
+        <div>
+            <Author owner={campaign?.owner} />
+        </div>
       )}
       {activeTab === 'reward' && (
         <div>{/* Render Reward section here */}</div>

@@ -42,6 +42,7 @@ module {
 
     public type Rewards =  {
         level : Text;
+        nftPrice : Nat;
         imageUrl : ?Text;
         quantity : Nat;
         description : Text;
