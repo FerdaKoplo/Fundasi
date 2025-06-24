@@ -2,12 +2,12 @@ import React, { useState } from "react";
 
 interface RewardProps {
   rewards: {
-    level: number;
-    title: string;
-    description: string;
+    level: string;
     imageUrl: string[];
-    quantity: number;
-    items: string[];
+    quantity: BigInt;
+    description: string;
+    estimatedDelivery: string;
+    priceNft: BigInt;
   }[];
 }
 

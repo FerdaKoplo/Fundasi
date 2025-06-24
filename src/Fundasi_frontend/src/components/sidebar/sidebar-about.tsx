@@ -1,12 +1,14 @@
 import React from "react";
 
+interface AboutCampaign {
+  titleAbout?: string;
+  content?: string;
+  section?: string;
+  imageUrl: string[];
+}
+
 interface SideBarAboutProps {
-  aboutSections: {
-    titleAbout: string[];
-    content: string[];
-    section: string[];
-    imageUrl: string[];
-  }[];
+  aboutSections: AboutCampaign[];
 }
 
 const SideBarAbout: React.FC<SideBarAboutProps> = ({ aboutSections }) => {

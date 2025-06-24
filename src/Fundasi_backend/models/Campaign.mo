@@ -46,7 +46,7 @@ module {
         quantity : Nat;
         description : Text;
         estimatedDelivery : ?Text;
-        priceNFT : Nat;
+        nftPrice : Nat;
     };
 
     public type AboutCampaign = {

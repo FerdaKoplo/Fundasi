@@ -143,28 +143,19 @@ const DetailCampaign = () => {
       {activeTab === "campaign" && (
         <div className="flex mt-8">
           <div className="w-1/4">
-            <About
-              aboutSections={
-                campaign?.about?.map((item) => ({
-                  titleAbout: [item.titleAbout],
-                  content: [item.content],
-                  section: [item.section],
-                  imageUrl: item.imageUrl ?? [],
-                })) ?? []
-              }
-            />
+            <SidebarAbout aboutSections={campaign?.about ?? []} />
           </div>
           <div className="w-3/4">
             <About aboutSections={campaign?.about ?? []} />
           </div>
         </div>
       )}
-      {activeTab === "author" && <div>{/* Render Author section here */}</div>}
-      {activeTab === "reward" && (
+      {activeTab === "author" && (
         <div>
           <Reward rewards={campaign?.rewards ?? []} />
         </div>
       )}
+      {activeTab === "reward" && <div>{/* Render Reward section here */}</div>}
       {activeTab === "reviews" && <div>{/* Render Reviews here */}</div>}
     </div>
   );
