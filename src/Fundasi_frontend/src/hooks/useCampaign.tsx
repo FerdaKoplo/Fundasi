@@ -20,10 +20,10 @@ export const useCampaign = () => {
         }
     } 
 
-    const fetchDetailCampaing = async  () => {
+    const fetchDetailCampaing = async  (campaignId: bigint) => {
         setLoading  (true)
         try {
-            const result = await Fundasi_backend.getDetailCampaign()
+            const result = await Fundasi_backend.getDetailCampaign(campaignId)
             if (result.length){
                 setCampaign(result[0])
             } else {
@@ -54,10 +54,10 @@ export const useCampaign = () => {
         }
     } 
 
-    const fetchUpdateCampaign = async  (updatedCampaign : Campaign) : Promise<Result> => {
+    const fetchUpdateCampaign = async  (campaignId : bigint , updatedCampaign : Campaign) : Promise<Result> => {
         setLoading  (true)
         try {
-            const result = await Fundasi_backend.updateCampaign(updatedCampaign)
+            const result = await Fundasi_backend.updateCampaign(campaignId , updatedCampaign)
             if('ok' in result){
                 setCampaign(result.ok)
             } else {
@@ -72,10 +72,10 @@ export const useCampaign = () => {
         }
     } 
 
-    const fetchDeleteCampaign = async  () : Promise<Result_2> => {
+    const fetchDeleteCampaign = async  (campaignId : bigint) : Promise<Result_2> => {
         setLoading  (true)
         try {
-            const result = await Fundasi_backend.deleteCampaign()
+            const result = await Fundasi_backend.deleteCampaign(campaignId)
             if('ok' in result){
                 setCampaign(null)
             } else {

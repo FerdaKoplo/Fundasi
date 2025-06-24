@@ -60,6 +60,7 @@ const AddCampaign = () => {
   const handleAddCampaign = async (e : React.FormEvent) => {
     e.preventDefault()
     const campaignData = {
+      id: BigInt(0),
       title: title || '',
       description: description || '',
       milestone: BigInt(parseInt(milestone) || 100),

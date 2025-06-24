@@ -80,14 +80,18 @@ export default function MicroBusinessList() {
               </div>
             </div>
             <div className="p-4">
-              <h2 className="text-white font-semibold text-base">{biz.title}</h2>
-              <p className="text-sm text-gray-400 mb-2">{biz.owner.username}</p>
+              <div className="flex justify-between items-center">
+                <div className="flex flex-col">
+                  <h2 className="text-white font-semibold text-base">{biz.title}</h2>
+                  <p className="text-sm text-gray-400 mb-2">{biz.owner.username}</p>
+                </div>
+                <Link to={`/campaign/${biz.id}`} >
+                  <FaEye />
+                </Link>
+              </div>
               <div className="flex items-center text-sm text-white gap-2">
                 <span className="font-bold">{biz.rewards.length} rewards available</span>
                 <span className="text-white/60">• Ends on: {new Date(Number(biz.endTime) / 1_000_000).toLocaleDateString()}</span>
-                <Link to={""} >
-                  <FaEye />
-                </Link>
               </div>
             </div>
           </div>
