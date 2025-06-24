@@ -1,13 +1,15 @@
 import React, { useState } from 'react'
 import { useCampaign } from '../../../hooks/useCampaign'
 import { Principal } from '@dfinity/principal'
+import { useAuth } from '../../../hooks/useAuth'
 
 const AddCampaign = () => {
 
   const { fetchAddCampaign, loading, error } = useCampaign()
   const [title, setTitle] = useState('')
   const [description, setDescription] = useState('')
-  const [milestone, setMilestone] = useState('');
+  const [milestone, setMilestone] = useState('')
+  const { user, isLoading: isAuthLoading, error: authError } = useAuth()
   const [media, setMedia] = useState<{ imageUrl: [] | [string] }>({ imageUrl: [] })
   const [aboutSections, setAboutSections] = useState([
     { titleAbout: '', content: '', section: '' },
@@ -62,13 +64,13 @@ const AddCampaign = () => {
       description: description || '',
       milestone: BigInt(parseInt(milestone) || 100),
       owner: {
-        id: Principal.fromText('aaaaa-aa'),
-        username: 'test-user',
-        trustPoints: BigInt(0),
-        campaignCount: BigInt(0),
-        completedCampaigns: BigInt(0),
-        createdAt: BigInt(Date.now()),
-        avatarUrl: [] as []
+        id: user?.id ?? Principal.fromText('aaaaa-aa'),
+        username:  user?.username ?? 'Anonymous',
+        trustPoints: user?.trustPoints ?? BigInt(0),
+        campaignCount: user?.campaignCount ?? BigInt(0),
+        completedCampaigns:user?.completedCampaigns ??  BigInt(0),
+        createdAt: user?.createdAt ?? BigInt(Date.now()),
+        avatarUrl: user?.avatarUrl ?? []
       },
       stats: {
         upvote: BigInt(0),
@@ -93,7 +95,8 @@ const AddCampaign = () => {
           section: a.section ? [a.section] as [string] : [] as []
         };
       }),
-      review: [] as []
+      review: [] as [],
+      endTime: BigInt(Math.floor((Date.now() / 1000) + 60 * 24 * 60 * 60))
     }
 
     const result = await fetchAddCampaign(campaignData)

@@ -1,58 +1,20 @@
 import { useEffect, useState } from "react";
 import { useCampaign } from "../../../hooks/useCampaign";
-
-// interface MicroBusiness {
-//   id: string;
-//   title: string;
-//   author: string;
-//   image: string;
-//   daysLeft: number;
-//   funded: number;
-//   score: number;
-// }
-
-// const dummyData: MicroBusiness[] = [
-//   {
-//     id: "1",
-//     title: "Campaign Rajut Ferdi",
-//     author: "Rajut Ferdi corp.",
-//     image: "/images/dummy1.jpg",
-//     daysLeft: 35,
-//     funded: 80,
-//     score: 90,
-//   },
-//   {
-//     id: "2",
-//     title: "Campaign Mirza Dinsum",
-//     author: "Dinsum Mirza corp.",
-//     image: "/images/mirza-dinsum.jpg",
-//     daysLeft: 35,
-//     funded: 60,
-//     score: 90,
-//   },
-//   {
-//     id: "3",
-//     title: "Campaign Rajut Ferdi",
-//     author: "Rajut Ferdi corp.",
-//     image: "/images/dummy1.jpg",
-//     daysLeft: 35,
-//     funded: 80,
-//     score: -90,
-//   }
-// ];
+import { FaEye } from "react-icons/fa";
+import { Link } from "react-router-dom";
 
 export default function MicroBusinessList() {
   const [search, setSearch] = useState("");
-  const { campaigns, fetchAllCampaing, loading, error } = useCampaign();
+  const { fetchAllCampaing, campaigns, loading, error } = useCampaign()
+  const { fetchDetailCampaing } = useCampaign()
 
   useEffect(() => {
     fetchAllCampaing();
   }, []);
 
-  const filtered = campaigns.filter(
-    (biz) =>
-      biz.title.toLowerCase().includes(search.toLowerCase()) ||
-      biz.owner.username.toLowerCase().includes(search.toLowerCase())
+  const filtered = campaigns.filter((biz) =>
+    biz.title.toLowerCase().includes(search.toLowerCase()) ||
+    biz.owner.username.toLowerCase().includes(search.toLowerCase())
   );
 
   return (
@@ -79,7 +41,7 @@ export default function MicroBusinessList() {
           <input
             type="text"
             placeholder="Search microbusiness, authors"
-            className="w-full pl-10 pr-4 py-2 rounded-full text-white placeholder-white/60 focus:outline-none bg-gradient-to-r from-white to-[#2D2D2D] bg-opacity-20"
+            className="w-full pl-10 pr-4 py-2 rounded-full text-white placeholder-white/60 focus:outline-none black-gradient  bg-opacity-20"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
           />
@@ -90,44 +52,42 @@ export default function MicroBusinessList() {
       </div>
 
       <p className="text-white text-lg font-medium">
-        {businesses.length.toLocaleString()}{" "}
+        {campaigns.length.toLocaleString()}{" "}
         <span className="text-primary-light">MicroBusiness</span>
       </p>
 
+      {loading && <div>Loading campaigns...</div>}
+      {error && <div className="text-red-500">{error}</div>}
+
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-6">
-        {filtered.map((biz) => (
+        {filtered.map((biz, index) => (
           <div
-            key={biz.id}
+            key={index}
             className="bg-zinc-900 rounded-lg overflow-visible relative"
           >
             <div className="relative">
-              <img
-                src={biz.image}
-                alt={biz.title}
-                className="w-full h-48 object-cover"
-              />
-              {biz.score >= 0 ? (
-                <div className="absolute -top-5 -left-3 w-12 h-12 rounded-full p-1 bg-gradient-to-r from-[#398267] to-[#A5CC86]">
-                  <div className="w-full h-full rounded-full flex items-center justify-center bg-black text-white font-bold text-sm">
-                    {biz.score}
-                  </div>
-                </div>
-              ) : (
-                <div className="absolute -top-5 -left-3 w-12 h-12 rounded-full p-1 bg-gradient-to-r from-[#CCB386] to-[#823939]">
-                  <div className="w-full h-full rounded-full flex items-center justify-center bg-black text-white font-bold text-sm">
-                    {biz.score}
-                  </div>
-                </div>
+              {biz.media.imageUrl.length > 0 && (
+                <img
+                  src={biz.media.imageUrl[0]}
+                  alt={biz.title}
+                  className="w-full h-48 object-cover"
+                />
               )}
+              <div className="absolute -top-5 -left-3 w-12 h-12 rounded-full p-1 bg-gradient-to-r from-[#398267] to-[#A5CC86]">
+                <div className="w-full h-full rounded-full flex items-center justify-center bg-black text-white font-bold text-sm">
+                  {Number(biz.stats.upvote * biz.stats.devote)}
+                </div>
+              </div>
             </div>
             <div className="p-4">
-              <h2 className="text-white font-semibold text-base">
-                {biz.title}
-              </h2>
-              <p className="text-sm text-gray-400 mb-2">{biz.author}</p>
+              <h2 className="text-white font-semibold text-base">{biz.title}</h2>
+              <p className="text-sm text-gray-400 mb-2">{biz.owner.username}</p>
               <div className="flex items-center text-sm text-white gap-2">
-                <span className="font-bold">{biz.daysLeft} days left</span>
-                <span className="text-white/60">• {biz.funded}% funded</span>
+                <span className="font-bold">{biz.rewards.length} rewards available</span>
+                <span className="text-white/60">• Ends on: {new Date(Number(biz.endTime) / 1_000_000).toLocaleDateString()}</span>
+                <Link to={""} >
+                  <FaEye />
+                </Link>
               </div>
             </div>
           </div>
