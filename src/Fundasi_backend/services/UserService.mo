@@ -6,7 +6,6 @@ import Time "mo:base/Time";
 import Array "mo:base/Array";
 import UserRepository "../repository/UserRepository";
 module {
-
       public func registerUser(users : User.Users, userId : Principal, username : Text) : Result.Result<User.User, Text> {
         if (Text.size(username) < 3) {
             return #err("Username must be at least 3 characters long");
@@ -34,7 +33,6 @@ module {
                     avatarUrl = null;
                 };
                 users.put(userId, newUser);
-                
                 #ok(newUser);
             };
         };

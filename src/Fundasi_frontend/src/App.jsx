@@ -1,12 +1,13 @@
-import React from 'react';
-import AuthPage from './pages/user/auth/AuthPage';
+import React from "react";
+import MicroBusinessList from "./pages/user/campaigns/listcampaign";
+import loginICP from "./components/loginICP";
 
 function App() {
-
   return (
-    <div className="bg-black w-full h-screen">
-        <AuthPage />
-    </div>
+    <>
+      <MicroBusinessList />
+      <loginICP />
+    </>
   );
 }
 
