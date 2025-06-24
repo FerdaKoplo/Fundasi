@@ -3,6 +3,7 @@ import Text "mo:base/Text";
 import Result "mo:base/Result";
 import Principal "mo:base/Principal";
 import Iter "mo:base/Iter";
+import Time "mo:base/Time";
 module {
 
     public func getAllCampaign(campaigns : Campaign.Campaigns) : [Campaign.Campaign] {
@@ -17,8 +18,23 @@ module {
         if (campaigns.get(ownerId) != null) {
             return #err("Owner already has a campaign registered.");
         };
-        campaigns.put(ownerId, newCampaign);
-        #ok(newCampaign);
+
+        let now = Time.now();
+        let sixtyDaysInNanos = 60 * 86400 *  1_000_000_000;  
+        let campaignWithEndTime : Campaign.Campaign = {
+            description = newCampaign.description;
+            title = newCampaign.title;
+            milestone = newCampaign.milestone;
+            owner = newCampaign.owner;
+            stats = newCampaign.stats;
+            media = newCampaign.media;
+            rewards = newCampaign.rewards;
+            about = newCampaign.about;
+            review = newCampaign.review;
+            endTime = now + sixtyDaysInNanos;
+        };
+        campaigns.put(ownerId, campaignWithEndTime);
+        #ok(campaignWithEndTime);
     };
 
     public func updateCampaign(campaigns : Campaign.Campaigns, ownerId : Principal, updatedCampaign  : Campaign.Campaign) : Result.Result<Campaign.Campaign, Text> {
