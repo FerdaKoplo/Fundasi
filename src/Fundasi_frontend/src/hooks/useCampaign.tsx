@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import { Fundasi_backend } from '../../../declarations/Fundasi_backend'
-import type { Campaign, Result, Result_2 } from '../../../declarations/Fundasi_backend/Fundasi_backend.did';
+import type { Campaign, Result, Result_1, Result_2 } from '../../../declarations/Fundasi_backend/Fundasi_backend.did';
 export const useCampaign = () => {
 
     const [campaigns, setCampaigns] = useState<Campaign[]>([])
@@ -36,7 +36,7 @@ export const useCampaign = () => {
         }
     }
     
-    const fetchAddCampaign = async  (newCampaign : Campaign) : Promise<Result> => {
+    const fetchAddCampaign = async  (newCampaign : Campaign) : Promise<Result_1> => {
         setLoading  (true)
         try {
             const result = await Fundasi_backend.addCampaign(newCampaign)
@@ -54,7 +54,7 @@ export const useCampaign = () => {
         }
     } 
 
-    const fetchUpdateCampaign = async  (campaignId : bigint , updatedCampaign : Campaign) : Promise<Result> => {
+    const fetchUpdateCampaign = async  (campaignId : bigint , updatedCampaign : Campaign) : Promise<Result_1> => {
         setLoading  (true)
         try {
             const result = await Fundasi_backend.updateCampaign(campaignId , updatedCampaign)

@@ -7,13 +7,18 @@ import SidebarAbout from '../../../components/sidebar/sidebar-about';
 import NavCampaign from '../../../components/nav/campaign/nav-campaign';
 import About from '../../../components/detail_campaign_pages/about';
 import Author from '../../../components/detail_campaign_pages/author';
+import useVotes from '../../../hooks/useVotes';
+import { useAuth } from '../../../hooks/useAuth';
+import { Principal } from '@dfinity/principal';
 
 const DetailCampaign = () => {
 
   const { id } = useParams()
   const [currentImageIndex, setCurrentImageIndex] = useState(0)
-   const [activeTab, setActiveTab] = useState<'campaign' | 'author' | 'reward' | 'reviews'>('campaign')
+  const [activeTab, setActiveTab] = useState<'campaign' | 'author' | 'reward' | 'reviews'>('campaign')
   const { campaign, loading, error, fetchDetailCampaing } = useCampaign()
+  const { principalId } = useAuth()
+  const { upvote, devote } = useVotes()
 
   useEffect(() => {
     if (id) {
@@ -33,7 +38,26 @@ const DetailCampaign = () => {
     return () => clearInterval(interval)
   }, [campaign?.media?.imageUrl])
 
+  const handleUpvote = async () => {
+    if (!principalId) {
+      alert("Please Login First")
+      return
+    }
 
+    const userPrincipal = Principal.fromText(principalId)
+    await upvote(userPrincipal, BigInt(10))
+
+  }
+
+  const handleDevote = async () => {
+    if (!principalId) {
+      alert("Please Login First")
+      return
+    }
+
+    const userPrincipal = Principal.fromText(principalId)
+    await devote(userPrincipal, BigInt(5))
+  }
 
   return (
     <div className="bg-black space-y-12 px-32 text-white min-h-screen p-10">
@@ -89,12 +113,12 @@ const DetailCampaign = () => {
           </div>
           <button className="black-gradient rounded-full py-3 px-8 ">
             Fund this business
-          </button>
+          </button> 
 
           <div className="flex gap-4 mt-4">
             <div className='flex items-center gap-5'>
               <div className='rounded-full bg-gradient-to-t p-1 from-green-700 to-green-400'>
-                <button className="flex rounded-full p-2 bg-black text-white items-center gap-2 ">
+                <button onClick={handleUpvote} className="flex rounded-full p-2 bg-black text-white items-center gap-2 ">
                   <FaCheck />
                 </button>
               </div>
@@ -102,7 +126,7 @@ const DetailCampaign = () => {
             </div>
             <div className='flex items-center gap-5'>
               <div className='rounded-full bg-gradient-to-t p-1 from-red-700 to-red-400'>
-                <button className="flex rounded-full p-2 bg-black  items-center gap-2 ">
+                <button onClick={handleDevote} className="flex rounded-full p-2 bg-black  items-center gap-2 ">
                   <ImCross />
                 </button>
               </div>
@@ -124,10 +148,10 @@ const DetailCampaign = () => {
           </div>
         </div>
       )}
-      
+
       {activeTab === 'author' && (
         <div>
-            <Author owner={campaign?.owner} />
+          <Author owner={campaign?.owner} />
         </div>
       )}
       {activeTab === 'reward' && (
