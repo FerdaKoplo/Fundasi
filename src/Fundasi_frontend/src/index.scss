@@ -2,10 +2,12 @@
 @tailwind components;
 @tailwind utilities;
 
+
 @layer utilities {
   .green-gradient {
     @apply bg-gradient-to-r from-[#398267] to-[#A5CC86] bg-clip-text text-transparent;
   }
+
 
   .black-gradient {
     @apply bg-gradient-to-b from-[#2D2D2D] via-[#1A1A1A] to-[#111];
