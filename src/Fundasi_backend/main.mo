@@ -27,26 +27,57 @@ actor Main {
   var campaignMap : HashMap.HashMap<Nat, Campaign.Campaign> = HashMap.HashMap<Nat, Campaign.Campaign>(0, Nat.equal, Hash.hash);
 
   stable var stableNFTs : [(Nat, NFT.NFT)] = [];
-  var nftMap : HashMap.HashMap<Nat, NFT.NFT> = HashMap.HashMap<Nat, NFT.NFT>(0, Nat.equal, Nat.hash);
+  var nftMap : HashMap.HashMap<Nat, NFT.NFT> = HashMap.HashMap<Nat, NFT.NFT>(0, Nat.equal, Hash.hash);
   var nextNftId : Nat = 0;
 
   var campaignCounter : Nat = 0;
-  stable var icrc37_state = ICRC37.init(ICRC37.initialState(), #v0_1_0(#id), Icrc37Environment.defaultConfig(), Principal.fromActor(Main));
+  var canisterId: ?Principal = null;
+  var icrc37_state: Icrc37Types.CollectionState = ICRC37.initialState();
   private var _icrc37: ?ICRC37.ICRC37 = null;
 
-  private func get_icrc37_environment(): Icrc37Types.Environment {
-    Icrc37Environment.getEnvironment(nftMap, icrc37_state);
+  public shared(msg) func initCanisterId(): async () {
+    if (canisterId == null) {
+      canisterId := ?Principal.fromActor(Main);
+    };
+  };
+
+  public shared(msg) func initICRC37(): async () {
+    switch (canisterId) {
+      case (null) {
+        return; 
+      };
+      case (?cid) {
+        icrc37_state := ICRC37.init(icrc37_state, #v0_1_0(#id), Icrc37Environment.defaultConfig(), cid);
+        let env = get_icrc37_environment(cid);
+        _icrc37 := ?ICRC37.ICRC37(?icrc37_state, cid, env);
+      };
+    };
+  };
+
+  private func get_icrc37_environment(cid: Principal): Icrc37Types.Environment {
+    Icrc37Environment.getEnv(cid, nftMap, icrc37_state);
   };
 
   private func icrc37(): ICRC37.ICRC37 {
     switch (_icrc37) {
       case (null) {
-        let instance = ICRC37.ICRC37(?icrc37_state, Principal.fromActor(Main), get_icrc37_environment());
-        _icrc37 := ?instance;
-        instance;
+        switch (canisterId) {
+          case (null) {
+            // Default placeholder atau bisa throw error
+            let cid = Principal.fromText("aaaaa-aa");
+            let instance = ICRC37.ICRC37(?icrc37_state, cid, get_icrc37_environment(cid));
+            _icrc37 := ?instance;
+            instance;
+          };
+          case (?cid) {
+            let instance = ICRC37.ICRC37(?icrc37_state, cid, get_icrc37_environment(cid));
+            _icrc37 := ?instance;
+            instance;
+          };
+        }
       };
       case (?val) val;
-    }
+    };
   };
 
   for (user in stableUser.vals()) {
@@ -120,11 +151,15 @@ actor Main {
   };
 
   public query func icrc7_owner_of(ids: [Nat]): async [?Principal] {
-    icrc37().owner_of(ids);
+    return Array.map<Nat, ?Principal>(ids, func(id) {
+      icrc37().owner_of(id);
+    });
   };
 
   public query func icrc7_token_metadata(ids: [Nat]): async [?[(Text, Text)]] {
-    icrc37().token_metadata(ids);
+    return Array.map<Nat, ?[(Text, Text)]>(ids, func(id) {
+      icrc37().token_metadata(id);
+    });
   };
 
   public query func icrc7_tokens_of(owner: Principal): async [Nat] {

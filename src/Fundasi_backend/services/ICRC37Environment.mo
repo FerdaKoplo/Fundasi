@@ -10,11 +10,12 @@ import ICRC37Types "../models/ICRC37Types";
 module {
 
   public func getEnv(
+    canisterId: Principal,
     nftMap: HashMap.HashMap<Nat, NFT.NFT>,
     collectionState: ICRC37Types.CollectionState
   ) : ICRC37Types.Environment {
     {
-      canister = Principal.fromActor(this); 
+      canister = canisterId; 
       get_time = Time.now;
 
       refresh_state = func() : ICRC37Types.CollectionState {
@@ -48,5 +49,9 @@ module {
 
       add_ledger_transaction = func(_msg: Text) {};
     }
+  };
+  
+   public func defaultConfig(): () {
+    ();
   };
 };
