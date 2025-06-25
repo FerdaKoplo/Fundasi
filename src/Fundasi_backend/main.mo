@@ -63,7 +63,6 @@ actor Main {
       case (null) {
         switch (canisterId) {
           case (null) {
-            // Default placeholder atau bisa throw error
             let cid = Principal.fromText("aaaaa-aa");
             let instance = ICRC37.ICRC37(?icrc37_state, cid, get_icrc37_environment(cid));
             _icrc37 := ?instance;
@@ -108,10 +107,40 @@ actor Main {
   // NFT
   public shared(msg) func mintRewardNFT(campaignId: Nat, level: Text, metadata: NFT.Metadata): async NFT.NFT {
     let caller = msg.caller;
-    let (nft, nextId) = NFTService.mintNFT(nftMap, nextNftId, campaignId, caller, level, metadata);
+    let (nft, nextId) = NFTService.mintNFT(nftMap, nextNftId, campaignId, Principal.fromActor(Main), level, metadata);
     nextNftId := nextId;
     return nft;
   };
+
+   public shared(msg) func purchaseNFT(tokenId: Nat): async Icrc37Types.TransferResult {
+    let caller = msg.caller;
+    switch (NFTService.getNFTById(nftMap, tokenId)) {
+      case null return #Err("NFT not found");
+      case (?nft) {
+        if (nft.ownerId != Principal.fromActor(Main)) {
+          return #Err("NFT not available for purchase");
+        };
+
+        // TODO: validate payment via ICRC-1 before allowing transfer
+        let transferArg: Icrc37Types.TransferArg = {
+          from = {
+            owner = nft.ownerId;
+            subaccount = null;
+          };
+          to = {
+            owner = caller;
+            subaccount = null;
+          };
+          token_ids = [nft.id];
+          memo = null;
+          created_at_time = null;
+        };
+        return icrc37().transfer(caller, transferArg);
+      }
+    }
+  };
+
+  
 
   public shared(msg) func transfer(arg: Icrc37Types.TransferArg): async Icrc37Types.TransferResult {
     icrc37().transfer(msg.caller, arg);

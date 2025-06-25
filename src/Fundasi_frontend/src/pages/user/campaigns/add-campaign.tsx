@@ -3,6 +3,7 @@ import { useCampaign } from "../../../hooks/useCampaign";
 import { Principal } from "@dfinity/principal";
 import { useAuth } from "../../../hooks/useAuth";
 import ReactMarkdown from "react-markdown";
+import { useNavigate } from "react-router-dom";
 
 const AddCampaign = () => {
   const { fetchAddCampaign, loading, error } = useCampaign();
@@ -10,6 +11,7 @@ const AddCampaign = () => {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [milestone, setMilestone] = useState("");
+  const navigate = useNavigate();
   const [media, setMedia] = useState<{ imageUrl: string[] }[]>([
     { imageUrl: [] },
   ]);
@@ -166,6 +168,17 @@ const AddCampaign = () => {
     };
     const result = await fetchAddCampaign(campaignData);
     console.log(result);
+    if ("ok" in result) {
+      const campaign = result.ok;
+      navigate(`/add-campaign/nft-minting/${campaign.id}`, {
+        state: {
+          rewards: campaignData.rewards,
+          campaignId: campaign.id,
+        },
+      });
+    } else {
+      console.error("Failed to create campaign:", result.err);
+    }
   };
   return (
     <div className="bg-black ">

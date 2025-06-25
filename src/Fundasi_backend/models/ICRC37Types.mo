@@ -1,4 +1,3 @@
-// ICRC37Types.mo
 
 import Principal "mo:base/Principal";
 import Nat "mo:base/Nat";

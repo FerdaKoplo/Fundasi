@@ -31,7 +31,7 @@ module {
           NFTService.ownerOf(nftMap, tokenId);
         };
 
-        transfer_from = null; 
+        transfer_from = null;
       };
 
       token_metadata = func(tokenId: Nat) : ?[(Text, Text)] {
