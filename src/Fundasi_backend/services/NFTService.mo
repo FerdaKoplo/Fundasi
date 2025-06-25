@@ -63,6 +63,22 @@ module {
     );
     };
 
+    public func ownerOf(
+      nfts: HashMap.HashMap<Nat, NFT.NFT>,
+      tokenId: Nat
+    ) : ?Principal {
+      switch (nfts.get(tokenId)) {
+        case (?nft) ?nft.ownerId;
+        case null null;
+      }
+    };
+
+    public func tokens(
+      nfts: HashMap.HashMap<Nat, NFT.NFT>
+    ) : [Nat] {
+      Iter.toArray(nfts.keys());
+    };
+
   public func getMetadataFor(
     nfts: HashMap.HashMap<Nat, NFT.NFT>,
     id: Nat

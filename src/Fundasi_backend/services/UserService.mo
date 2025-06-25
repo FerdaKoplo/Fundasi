@@ -54,4 +54,51 @@ module {
         };
         return null;
     };
+
+    public func postUpvote(users : User.Users, userId : Principal, trustPoints : Nat) : ?User.User {
+    switch (users.get(userId)) {
+        case (?user) {
+            let updatedUser : User.User = {
+                id = user.id;
+                username = user.username;
+                trustPoints = user.trustPoints + trustPoints;
+                campaignCount = user.campaignCount;
+                createdAt = user.createdAt;
+                completedCampaigns = user.completedCampaigns;
+                avatarUrl = user.avatarUrl;
+            };
+            users.put(userId, updatedUser);
+            return ?updatedUser;
+        };
+        case (null) {
+            return null;
+        };
+      };
+    };
+
+    public func postDevote(users : User.Users, userId : Principal, trustPoints : Nat) : ?User.User {
+    switch (users.get(userId)) {
+        case (?user) {
+            let newTrustPoints = if (user.trustPoints > trustPoints) {
+                user.trustPoints - trustPoints
+            } else {
+                0
+            };
+            let updatedUser : User.User = {
+                id = user.id;
+                username = user.username;
+                trustPoints = newTrustPoints;
+                campaignCount = user.campaignCount;
+                createdAt = user.createdAt;
+                completedCampaigns = user.completedCampaigns;
+                avatarUrl = user.avatarUrl;
+            };
+            users.put(userId, updatedUser);
+            return ?updatedUser;
+        };
+        case (null) {
+            return null;
+        };
+        };
+    };
 };

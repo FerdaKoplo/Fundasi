@@ -8,19 +8,46 @@ import Result "mo:base/Result";
 import Iter "mo:base/Iter";
 import Nat "mo:base/Nat";
 import Hash "mo:base/Hash";
+import Time "mo:base/Time";
 import UserService "services/UserService";
 import Campaign "models/Campaign";
 import CampaignService "services/CampaignService";
+import NFT "models/NFT";
+import NFTService "services/NFTService";
+import Icrc37Types "models/ICRC37Types";
+import Icrc37Environment "services/ICRC37Environment";
+import ICRC37 "services/ICRC37";
 
 actor Main {
-  
+  // state
   stable var stableUser: [User.User] = [] : [User.User];
   var userMap : HashMap.HashMap<Principal, User.User> = HashMap.HashMap(0, Principal.equal, Principal.hash);
 
   stable var stableCampaigns : [Campaign.Campaign] = [] : [Campaign.Campaign];
   var campaignMap : HashMap.HashMap<Nat, Campaign.Campaign> = HashMap.HashMap<Nat, Campaign.Campaign>(0, Nat.equal, Hash.hash);
 
+  stable var stableNFTs : [(Nat, NFT.NFT)] = [];
+  var nftMap : HashMap.HashMap<Nat, NFT.NFT> = HashMap.HashMap<Nat, NFT.NFT>(0, Nat.equal, Nat.hash);
+  var nextNftId : Nat = 0;
+
   var campaignCounter : Nat = 0;
+  stable var icrc37_state = ICRC37.init(ICRC37.initialState(), #v0_1_0(#id), Icrc37Environment.defaultConfig(), Principal.fromActor(Main));
+  private var _icrc37: ?ICRC37.ICRC37 = null;
+
+  private func get_icrc37_environment(): Icrc37Types.Environment {
+    Icrc37Environment.getEnvironment(nftMap, icrc37_state);
+  };
+
+  private func icrc37(): ICRC37.ICRC37 {
+    switch (_icrc37) {
+      case (null) {
+        let instance = ICRC37.ICRC37(?icrc37_state, Principal.fromActor(Main), get_icrc37_environment());
+        _icrc37 := ?instance;
+        instance;
+      };
+      case (?val) val;
+    }
+  };
 
   for (user in stableUser.vals()) {
     userMap.put(user.id, user);
@@ -29,6 +56,7 @@ actor Main {
   system func preupgrade() {
     stableUser := Iter.toArray(userMap.vals());
     stableCampaigns := Iter.toArray(campaignMap.vals());
+    stableNFTs := Iter.toArray(nftMap.entries());
   };
   
   system func postupgrade() {
@@ -38,10 +66,72 @@ actor Main {
     for (campaign in stableCampaigns.vals()) {
       campaignMap.put(campaign.id, campaign);
     };
+    for ((id, nft) in stableNFTs.vals()) {
+      nftMap.put(id, nft);
+    };
     stableUser := [];
     stableCampaigns := [];
+    stableNFTs := [];
   };
   
+  // NFT
+  public shared(msg) func mintRewardNFT(campaignId: Nat, level: Text, metadata: NFT.Metadata): async NFT.NFT {
+    let caller = msg.caller;
+    let (nft, nextId) = NFTService.mintNFT(nftMap, nextNftId, campaignId, caller, level, metadata);
+    nextNftId := nextId;
+    return nft;
+  };
+
+  public shared(msg) func transfer(arg: Icrc37Types.TransferArg): async Icrc37Types.TransferResult {
+    icrc37().transfer(msg.caller, arg);
+  };
+
+  // ICRC-7/ICRC-37 Queries
+  public query func icrc37_supported_standards(): async [(Text, Text)] {
+    icrc37().supported_standards();
+  };
+
+  public query func icrc37_name(): async ?Text {
+    icrc37().name();
+  };
+
+  public query func icrc37_symbol(): async ?Text {
+    icrc37().symbol();
+  };
+
+  public query func icrc37_description(): async ?Text {
+    icrc37().description();
+  };
+
+  public query func icrc37_logo(): async ?Text {
+    icrc37().logo();
+  };
+
+  public query func icrc37_supply_cap(): async ?Nat {
+    icrc37().supply_cap();
+  };
+
+  public query func icrc37_total_supply(): async Nat {
+    icrc37().total_supply();
+  };
+
+  public query func icrc7_tokens(): async [Nat] {
+    icrc37().tokens();
+  };
+
+  public query func icrc7_owner_of(ids: [Nat]): async [?Principal] {
+    icrc37().owner_of(ids);
+  };
+
+  public query func icrc7_token_metadata(ids: [Nat]): async [?[(Text, Text)]] {
+    icrc37().token_metadata(ids);
+  };
+
+  public query func icrc7_tokens_of(owner: Principal): async [Nat] {
+    icrc37().tokens_of(owner);
+  };
+
+
   // User
   public shared(msg) func registerUser(username : Text) : async Result.Result<User.User, Text> {
     let caller = msg.caller;

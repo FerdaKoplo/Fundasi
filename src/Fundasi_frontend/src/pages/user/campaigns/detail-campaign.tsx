@@ -6,6 +6,8 @@ import { ImCross } from "react-icons/im";
 import SidebarAbout from "../../../components/sidebar/sidebar-about";
 import NavCampaign from "../../../components/nav/campaign/nav-campaign";
 import About from "../../../components/detail_campaign_pages/about";
+import Author from "../../../components/detail_campaign_pages/author";
+import SidebarReward from "../../../components/sidebar/sidebar-reward";
 import Reward from "../../../components/detail_campaign_pages/reward";
 
 const DetailCampaign = () => {
@@ -15,6 +17,7 @@ const DetailCampaign = () => {
     "campaign" | "author" | "reward" | "reviews"
   >("campaign");
   const { campaign, loading, error, fetchDetailCampaing } = useCampaign();
+  const [selectedRewardIndex, setSelectedRewardIndex] = useState(0);
 
   useEffect(() => {
     if (id) {
@@ -35,7 +38,7 @@ const DetailCampaign = () => {
   }, [campaign?.media?.imageUrl]);
 
   return (
-    <div className="bg-black space-y-10 px-32 text-white min-h-screen p-10">
+    <div className="bg-black space-y-12 px-32 text-white min-h-screen p-10">
       <h1 className="text-3xl font-bold text-center mb-4">
         Campaign {campaign?.title}
       </h1>
@@ -150,12 +153,29 @@ const DetailCampaign = () => {
           </div>
         </div>
       )}
+
       {activeTab === "author" && (
         <div>
-          <Reward rewards={campaign?.rewards ?? []} />
+          <Author owner={campaign?.owner} />
         </div>
       )}
-      {activeTab === "reward" && <div>{/* Render Reward section here */}</div>}
+      {activeTab === "reward" && (
+        <div className="flex mt-8 gap-10">
+          <div className="w-1/4">
+            <SidebarReward
+              rewards={campaign?.rewards ?? []}
+              selectedIndex={selectedRewardIndex}
+              onSelect={setSelectedRewardIndex}
+            />
+          </div>
+          <div className="w-3/4">
+            <Reward
+              rewards={campaign?.rewards ?? []}
+              selectedIndex={selectedRewardIndex}
+            />
+          </div>
+        </div>
+      )}
       {activeTab === "reviews" && <div>{/* Render Reviews here */}</div>}
     </div>
   );

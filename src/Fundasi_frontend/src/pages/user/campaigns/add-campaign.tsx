@@ -23,13 +23,13 @@ const AddCampaign = () => {
       description: "",
       estimatedDelivery: "",
       nftPrice: "",
+      imageUrl: [] as string[],
     },
   ]);
 
   const handleAddMedia = () => {
     setMedia([...media, { imageUrl: [] }]);
   };
-
   const handleAddAbout = () => {
     setAboutSections([
       ...aboutSections,
@@ -45,6 +45,7 @@ const AddCampaign = () => {
         description: "",
         estimatedDelivery: "",
         nftPrice: "",
+        imageUrl: [] as string[],
       },
     ]);
   };
@@ -97,6 +98,26 @@ const AddCampaign = () => {
       setAboutSections(updated);
     });
   };
+
+  const handleRewardImageChange = (index: number, files: FileList | null) => {
+    if (!files) return;
+    const promises = Array.from(files).map(
+      (file) =>
+        new Promise<string>((resolve) => {
+          const reader = new FileReader();
+          reader.onloadend = () => {
+            resolve(reader.result as string);
+          };
+          reader.readAsDataURL(file);
+        })
+    );
+    Promise.all(promises).then((results) => {
+      const updated = [...rewards];
+      updated[index].imageUrl = results;
+      setRewards(updated);
+    });
+  };
+
   const handleAddCampaign = async (e: React.FormEvent) => {
     e.preventDefault();
     const campaignData = {
@@ -128,7 +149,7 @@ const AddCampaign = () => {
           estimatedDelivery: r.estimatedDelivery
             ? ([r.estimatedDelivery] as [string])
             : ([] as []),
-          imageUrl: [] as [],
+          imageUrl: r.imageUrl?.[0] || "",
           nftPrice: BigInt(parseInt(r.nftPrice) || 0),
         };
       }),
@@ -308,6 +329,25 @@ const AddCampaign = () => {
                         handleRewardChange(index, "quantity", e.target.value)
                       }
                     />
+
+                    <input
+                      className="black-gradient text-gray-100 rounded-lg p-3 w-full"
+                      accept="image/*"
+                      type="file"
+                      onChange={(e) =>
+                        handleRewardImageChange(index, e.target.files)
+                      }
+                    />
+                    <div className="flex gap-2 mt-2">
+                      {r.imageUrl.map((url, i) => (
+                        <img
+                          key={i}
+                          src={url}
+                          alt={`Reward ${index}-img${i}`}
+                          className="w-20 h-20 rounded-lg object-cover"
+                        />
+                      ))}
+                    </div>
                     <input
                       className="black-gradient text-gray-100 rounded-lg p-3 w-full"
                       placeholder="Description"

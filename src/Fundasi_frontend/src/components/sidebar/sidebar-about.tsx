@@ -1,9 +1,9 @@
 import React from "react";
 
 interface AboutCampaign {
-  titleAbout?: string;
-  content?: string;
-  section?: string;
+  titleAbout: [string] | [];
+  content: [string] | [];
+  section: [string] | [];
   imageUrl: string[];
 }
 

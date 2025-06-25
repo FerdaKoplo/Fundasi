@@ -1,73 +1,75 @@
-import React, { useState } from "react";
+import React from "react";
 
 interface RewardProps {
   rewards: {
     level: string;
-    imageUrl: string[];
-    quantity: BigInt;
+    imageUrl: string;
+    quantity: bigint;
     description: string;
-    estimatedDelivery: string;
-    priceNft: BigInt;
+    estimatedDelivery: [] | [string];
+    nftPrice: bigint;
   }[];
+  selectedIndex: number;
 }
 
-const Reward: React.FC<RewardProps> = ({ rewards }) => {
-  const [selectedIndex, setSelectedIndex] = useState(0);
+const Reward: React.FC<RewardProps> = ({ rewards, selectedIndex }) => {
   const selected = rewards[selectedIndex];
 
   return (
-    <div className="flex gap-10 mt-10">
-      {/* Sidebar kiri */}
-      <div className="w-1/6 space-y-4">
-        {rewards.map((r, index) => (
-          <div
-            key={index}
-            onClick={() => setSelectedIndex(index)}
-            className={`cursor-pointer p-3 rounded-lg border ${
-              index === selectedIndex
-                ? "border-green-500 bg-gray-800"
-                : "border-gray-600"
-            }`}
-          >
-            <p className="text-sm">Level {r.level}</p>
-            <p className="text-xs text-green-500">1 NFT - {r.title}</p>
-          </div>
-        ))}
-      </div>
-
-      {/* NFT Card tengah */}
-      <div className="w-2/6">
-        <div className="bg-gray-900 p-6 rounded-lg text-center space-y-4 w-full max-w-xs">
-          {selected.imageUrl[0] && (
+    <div className="flex flex-col md:flex-row gap-10 text-white">
+      {/* Kartu NFT */}
+      <div className="md:w-1/2 bg-zinc-900 p-6 rounded-xl space-y-5 max-w-sm shadow-lg">
+        <div className="w-full h-40 bg-zinc-800 flex items-center justify-center rounded-md">
+          {selected.imageUrl ? (
             <img
-              src={selected.imageUrl[0]}
-              alt={selected.title}
-              className="w-20 h-20 object-cover mx-auto"
+              src={selected.imageUrl}
+              alt={`Level ${selected.level}`}
+              className="h-full object-contain"
             />
+          ) : (
+            <div className="text-gray-500 text-sm">No Image</div>
           )}
-          <h3 className="text-lg font-bold">Level {selected.level}</h3>
-          <p className="text-green-500 font-semibold">1 NFT</p>
-          <p className="text-sm">{selected.title}</p>
-          <p className="text-xs text-gray-400">Ships Worldwide</p>
-          <button className="mt-4 w-full py-2 rounded-full bg-green-600 hover:bg-green-700">
-            Fund 1 NFT
-          </button>
         </div>
+
+        <div className="flex justify-between items-center">
+          <h3 className="text-lg font-semibold">Level {selected.level}</h3>
+          <span className="text-green-400 font-semibold">
+            {selected.nftPrice.toString()} NFT
+          </span>
+        </div>
+
+        <p className="text-sm">{selected.description}</p>
+
+        <div className="flex justify-between text-sm text-gray-400">
+          <span>Estimated Delivery</span>
+          <span>{selected.estimatedDelivery || "-"}</span>
+        </div>
+        <div className="flex justify-between text-sm text-gray-400">
+          <span>Ships To</span>
+          <span>Ships Worldwide</span>
+        </div>
+
+        <button className="w-full py-2 rounded-full black-gradient hover:scale-105 active:scale-95 transition-transform duration-200">
+          Fund {selected.nftPrice.toString()} NFT
+        </button>
       </div>
 
-      {/* Deskripsi kanan */}
-      <div className="w-3/6 space-y-4">
+      {/* Deskripsi */}
+      <div className="md:w-1/2 space-y-5">
         <h2 className="text-2xl font-bold">Description</h2>
-        <p>{selected.description}</p>
+        <p className="text-gray-300">{selected.description}</p>
+
         <p className="text-sm text-gray-400">
-          Quantity Available: {selected.quantity}
+          Quantity Available: {selected.quantity.toString()}
         </p>
-        <h3 className="font-semibold">Item Included</h3>
-        <ul className="list-disc list-inside">
-          {selected.items.map((item, i) => (
-            <li key={i}>{item}</li>
-          ))}
-        </ul>
+
+        <div>
+          <h3 className="font-semibold mb-2">1 Item included</h3>
+          <div className="bg-zinc-800 p-4 rounded-md">
+            <p className="text-white font-medium">Photo Card</p>
+            <p className="text-sm text-gray-400">Quantity: 1</p>
+          </div>
+        </div>
       </div>
     </div>
   );
