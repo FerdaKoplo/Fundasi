@@ -1,21 +1,23 @@
-import React from 'react'
+import React from "react";
+
+interface AboutCampaign {
+  titleAbout: [string] | [];
+  content: [string] | [];
+  section: [string] | [];
+  imageUrl: string[];
+}
 
 interface SideBarAboutProps {
-  aboutSections: {
-    titleAbout: string[]
-    content: string[]
-    section: string[]
-    imageUrl: string[]
-  }[]
+  aboutSections: AboutCampaign[];
 }
 
 const SideBarAbout: React.FC<SideBarAboutProps> = ({ aboutSections }) => {
   return (
     <nav>
       {aboutSections?.map((aboutItem, index) => {
-        const title = aboutItem.titleAbout?.[0] ?? ''
-        const section = aboutItem.section?.[0] ?? ''
-        if (!title || !section) return null
+        const title = aboutItem.titleAbout?.[0] ?? "";
+        const section = aboutItem.section?.[0] ?? "";
+        if (!title || !section) return null;
 
         return (
           <a
@@ -25,10 +27,10 @@ const SideBarAbout: React.FC<SideBarAboutProps> = ({ aboutSections }) => {
           >
             {title}
           </a>
-        )
+        );
       })}
     </nav>
-  )
-}
+  );
+};
 
-export default SideBarAbout
+export default SideBarAbout;

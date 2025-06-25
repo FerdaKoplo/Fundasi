@@ -5,16 +5,17 @@ import { Link } from "react-router-dom";
 
 export default function MicroBusinessList() {
   const [search, setSearch] = useState("");
-  const { fetchAllCampaing, campaigns, loading, error } = useCampaign()
-  const { fetchDetailCampaing } = useCampaign()
+  const { fetchAllCampaing, campaigns, loading, error } = useCampaign();
+  const { fetchDetailCampaing } = useCampaign();
 
   useEffect(() => {
     fetchAllCampaing();
   }, []);
 
-  const filtered = campaigns.filter((biz) =>
-    biz.title.toLowerCase().includes(search.toLowerCase()) ||
-    biz.owner.username.toLowerCase().includes(search.toLowerCase())
+  const filtered = campaigns.filter(
+    (biz) =>
+      biz.title.toLowerCase().includes(search.toLowerCase()) ||
+      biz.owner.username.toLowerCase().includes(search.toLowerCase())
   );
 
   return (
@@ -82,16 +83,27 @@ export default function MicroBusinessList() {
             <div className="p-4">
               <div className="flex justify-between items-center">
                 <div className="flex flex-col">
-                  <h2 className="text-white font-semibold text-base">{biz.title}</h2>
-                  <p className="text-sm text-gray-400 mb-2">{biz.owner.username}</p>
+                  <h2 className="text-white font-semibold text-base">
+                    {biz.title}
+                  </h2>
+                  <p className="text-sm text-gray-400 mb-2">
+                    {biz.owner.username}
+                  </p>
                 </div>
-                <Link to={`/campaign/${biz.id}`} >
+                <Link to={`/campaign/${biz.id}`}>
                   <FaEye />
                 </Link>
               </div>
               <div className="flex items-center text-sm text-white gap-2">
-                <span className="font-bold">{biz.rewards.length} rewards available</span>
-                <span className="text-white/60">• Ends on: {new Date(Number(biz.endTime) / 1_000_000).toLocaleDateString()}</span>
+                <span className="font-bold">
+                  {biz.rewards.length} rewards available
+                </span>
+                <span className="text-white/60">
+                  • Ends on:{" "}
+                  {new Date(
+                    Number(biz.endTime) / 1_000_000
+                  ).toLocaleDateString()}
+                </span>
               </div>
             </div>
           </div>
