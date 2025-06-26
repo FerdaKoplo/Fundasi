@@ -25,3 +25,5 @@ dist/
 .env
 
 .mops
+ic-icrc1-ledger.wasm.gz
+ledger.did

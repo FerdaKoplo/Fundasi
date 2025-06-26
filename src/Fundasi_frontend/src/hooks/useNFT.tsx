@@ -10,13 +10,15 @@ export const useNFT = () => {
       description: string;
       imageUrl: string;
       reward: string;
-    }
+    },
+    price: bigint
   ) => {
     try {
       const nft = await Fundasi_backend.mintRewardNFT(
         BigInt(campaignId),
         level,
-        metadata
+        metadata,
+        price
       );
       return nft;
     } catch (err) {

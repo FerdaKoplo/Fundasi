@@ -7,6 +7,7 @@ type RewardFromLocation = {
   level: string;
   quantity: string | number;
   description: string;
+  nftPrice: string | number;
 };
 
 // metadata NFT
@@ -23,6 +24,7 @@ type UploadEntry = {
   quantity: number;
   uploaded: (string | null)[];
   metadata: Omit<Metadata, "imageUrl">;
+  nftPrice: string | number;
 };
 
 const NFTMinting = () => {
@@ -43,6 +45,7 @@ const NFTMinting = () => {
         description: reward.description,
         reward: reward.level,
       },
+      nftPrice: reward.nftPrice,
     }))
   );
 
@@ -70,10 +73,15 @@ const NFTMinting = () => {
           const imageUrl = reward.uploaded[i];
           if (!imageUrl) continue;
 
-          await mintRewardNFT(campaignId, reward.level, {
-            ...reward.metadata,
-            imageUrl,
-          });
+          await mintRewardNFT(
+            campaignId,
+            reward.level,
+            {
+              ...reward.metadata,
+              imageUrl,
+            },
+            BigInt(reward.nftPrice || 0) // ← harga dari reward
+          );
         }
       }
       alert("Minting complete!");
