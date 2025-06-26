@@ -60,6 +60,7 @@ const DetailCampaign = () => {
 
     const userPrincipal = Principal.fromText(principalId)
     await upvote(userPrincipal, BigInt(10))
+    alert("sukses memberi upvote!")
   }
 
   const handleDevote = async () => {
@@ -181,7 +182,7 @@ const DetailCampaign = () => {
       <NavCampaign activeTab={activeTab} onTabChange={setActiveTab} />
 
       {activeTab === "campaign" && (
-        <div className="flex mt-8">
+        <div className="flex gap-10 mt-8">
           <div className="w-1/4">
             <SidebarAbout aboutSections={campaign?.about ?? []}
               selectedIndex={selectedAboutIndex} 
@@ -196,7 +197,6 @@ const DetailCampaign = () => {
 
       {activeTab === 'author' && (
         <div>
-          <Author owner={campaign?.owner} />
           <Author owner={campaign?.owner} />
         </div>
       )}

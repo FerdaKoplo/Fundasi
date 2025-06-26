@@ -10,7 +10,7 @@ module {
         Iter.toArray(campaigns.vals());
     };
 
-    public func getByOwner(campaigns : Campaign.Campaigns, ownerId : Principal) : [Campaign.Campaign] {
+    public func getCampaignByOwner(campaigns : Campaign.Campaigns, ownerId : Principal) : [Campaign.Campaign] {
         Iter.toArray(
                 Iter.filter<Campaign.Campaign>(
                 campaigns.vals(),

@@ -5,7 +5,11 @@ import Array "mo:base/Array";
 import HashMap "mo:base/HashMap";
 import Principal "mo:base/Principal";
 import Result "mo:base/Result";
+import Campaign "models/Campaign";
 import Hash "mo:base/Hash";
+import Time "mo:base/Time";
+import Iter "mo:base/Iter";
+import Nat "mo:base/Nat";
 import UserService "services/UserService";
 import CampaignService "services/CampaignService";
 import NFT "models/NFT";
@@ -13,7 +17,9 @@ import NFTService "services/NFTService";
 import Icrc37Types "models/ICRC37Types";
 import Icrc37Environment "services/ICRC37Environment";
 import ICRC37 "services/ICRC37";
-import Env "env"
+import Env "env";
+import Review "models/Review";
+import ReviewService "services/ReviewService";
 
 actor Main {
   type PurchaseLog = {
@@ -25,6 +31,9 @@ actor Main {
   // state
   stable var stableUser: [User.User] = [] : [User.User];
   var userMap : HashMap.HashMap<Principal, User.User> = HashMap.HashMap(0, Principal.equal, Principal.hash);
+
+  stable var stableReviews : [Review.Review] = [] : [Review.Review];
+  var reviewsMap : HashMap.HashMap<Principal, Review.Review> = HashMap.HashMap(0, Principal.equal, Principal.hash);
 
   stable var stableCampaigns : [Campaign.Campaign] = [] : [Campaign.Campaign];
   var campaignMap : HashMap.HashMap<Nat, Campaign.Campaign> = HashMap.HashMap<Nat, Campaign.Campaign>(0, Nat.equal, Hash.hash);

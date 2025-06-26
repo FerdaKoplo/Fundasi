@@ -7,6 +7,7 @@ import { FaUser } from "react-icons/fa";
 import UserCampaign from "../../../components/detail_profile_pages/user-campaign";
 import TrustPointChart from "../../../components/diagram/trust-point-chart";
 import NavProfile from "../../../components/nav/profile/nav-profile";
+import Button from "../../../components/button/Button";
 
 const UserProfile = () => {
     const [activeTab, setActiveTab] = useState<'about' | 'campaigns' | 'trustpoint' | 'contribution'>('about')
@@ -36,11 +37,11 @@ const UserProfile = () => {
                     </p>
                 </div>
 
-                <div className="relative mt-2 flex flex-col gap-5 text-base w-[600px] p-6">
+                <div className="relative mt-2 flex flex-col gap-5 text-base w-screen px-32 p-6">
                     <div className="bottom-10 border-t border-gray-700"></div>
                     <NavMenuProfile activeTab={activeTab} onTabChange={setActiveTab} />
                     {activeTab === 'about' && (
-                        <div className="p-10 w-full max-w-xl px-4 text-gray-300 text-sm leading-relaxed">
+                        <div className="p-10 w-full flex flex-col items-center justify-centers px-4 text-gray-300 text-sm ">
                             <p>
                                 Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt
                                 ut labore et dolore magna aliqua. Ut enim ad minim veniam. Lorem ipsum dolor sit amet,
@@ -53,12 +54,16 @@ const UserProfile = () => {
                         </div>
                     )}
                     {activeTab === 'campaigns' && (
-                        <div className="p-10 w-full max-w-xl px-4 text-gray-300 text-sm leading-relaxed">
+                        <div className="p-10 w-full flex flex-col px-4 text-gray-300 text-sm ">
+                            <div className="flex items-center justify-between">
+                                <Button text={"Create Campaign"} link={"/add-campaign"}></Button>
+                                <Button text={"Edit Campaign"} link={"/edit-campaign"}></Button>
+                            </div>
                             <UserCampaign />
                         </div>
                     )}
                     {activeTab === 'trustpoint' && (
-                        <div className="p-10 w-full max-w-xl px-4 text-gray-300 text-sm leading-relaxed">
+                        <div className="p-10 w-full flex flex-col items-center justify-center px-4 text-gray-300 text-sm ">
                             <div className="flex items-center gap-10">
                                 <TrustPointChart value={Number(user?.trustPoints ?? BigInt(0))} total={100} />
                                 <div className="">
