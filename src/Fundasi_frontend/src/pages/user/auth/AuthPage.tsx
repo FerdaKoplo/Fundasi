@@ -12,7 +12,6 @@ const AuthPage = () => {
         <h1 className="text-5xl font-semibold font-montserrat tracking-tight drop-shadow-md bg-gradient-to-b from-[#d1d1d1e3] to-[#a1a1a1b7] bg-clip-text text-transparent">
           Welcome To Fundasi
         </h1>
-
         <div className="bg-[#1a1a1a]/90 rounded-2xl shadow-2xl ring-1 ring-white/10 px-10 py-12 w-max-w-xl">
           <AuthCard />
         </div>

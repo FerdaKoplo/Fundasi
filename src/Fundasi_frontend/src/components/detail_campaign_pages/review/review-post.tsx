@@ -14,7 +14,7 @@ const ReviewPost: React.FC<ReviewPostProps> = ({ onSubmit })  => {
     }
 
     return (
-        <form onSubmit={handleSubmit} className="flex flex-col md:flex-row gap-10">
+        <form onSubmit={handleSubmit} className="space-x-4">
             <textarea
                 value={comment}
                 onChange={(e) => setComment(e.target.value)}

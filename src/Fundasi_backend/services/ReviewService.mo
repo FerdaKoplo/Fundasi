@@ -19,4 +19,16 @@ module {
         };
         #ok(review);
     };
+
+    public func deleteReview(reviews : Review.Reviews, userId  : Principal) : Result.Result<Review.Review, Text> {
+    switch (reviews.get(userId)) {
+        case (?rev) {
+            let _ = reviews.remove(userId);
+            #ok(rev);
+        };
+        case (null) {
+            #err("Review tidak ditemukan");
+        };
+    };
+    };
 };

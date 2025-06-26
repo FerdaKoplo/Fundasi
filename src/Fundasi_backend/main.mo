@@ -178,6 +178,10 @@ actor Main {
   public query func getDetailCampaign(campaignId : Nat) : async ?Campaign.Campaign {
     return CampaignService.getDetailCampaign(campaignMap, campaignId);
   };
+
+  public query func getCampaignByOwner(ownerId : Principal) : async[Campaign.Campaign] {
+    return CampaignService.getCampaignByOwner(campaignMap, ownerId)
+  };
   
   public query func getUserByPrincipal(p : Principal) : async ?User.User {
     return UserService.getUserByPrincipal(userMap, p);
@@ -215,7 +219,6 @@ actor Main {
   };
 
   // Review
-
   public shared(msg) func postReview(comment : Text) : async Result.Result<Review.Review, Text> {
     let caller = msg.caller;
 
@@ -245,6 +248,26 @@ actor Main {
         };
       };
     };
+
+    public shared(msg) func deleteReview() : async Result.Result<Review.Review, Text> {
+    let caller = msg.caller;
+
+    switch (reviewsMap.get(caller)) {
+        case (?rev) {
+            let _ = reviewsMap.remove(caller);
+            
+            stableReviews := Array.filter<Review.Review>(
+                stableReviews,
+                func(r) { r.user.id != caller }
+            );
+            
+            return #ok(rev);
+        };
+        case (null) {
+            return #err("Review tidak ditemukan untuk user ini.");
+        };
+    };
+  };
 
   public query func getAllReviews() : async [Review.Review] {
     return ReviewService.getAllReviews(reviewsMap);

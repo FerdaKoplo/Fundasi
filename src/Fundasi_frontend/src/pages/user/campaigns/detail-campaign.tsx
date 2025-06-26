@@ -26,6 +26,7 @@ const DetailCampaign = () => {
   const { upvote, devote } = useVotes()
   const { reviews, fetchAllReview, loading: reviewLoading, error: reviewError, postReview } = useReview()
   const [selectedRewardIndex, setSelectedRewardIndex] = useState(0)
+  const [selectedAboutIndex, setSelectedAboutIndex] = useState(0)
 
   useEffect(() => {
     if (id) {
@@ -59,7 +60,6 @@ const DetailCampaign = () => {
 
     const userPrincipal = Principal.fromText(principalId)
     await upvote(userPrincipal, BigInt(10))
-
   }
 
   const handleDevote = async () => {
@@ -183,7 +183,10 @@ const DetailCampaign = () => {
       {activeTab === "campaign" && (
         <div className="flex mt-8">
           <div className="w-1/4">
-            <SidebarAbout aboutSections={campaign?.about ?? []} />
+            <SidebarAbout aboutSections={campaign?.about ?? []}
+              selectedIndex={selectedAboutIndex} 
+              onSelect={setSelectedAboutIndex}
+            />
           </div>
           <div className="w-3/4">
             <About aboutSections={campaign?.about ?? []} />
