@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import { Fundasi_backend } from '../../../declarations/Fundasi_backend'
 import type { Campaign, Result, Result_1, Result_2, Result_3 } from '../../../declarations/Fundasi_backend/Fundasi_backend.did';
+import { Principal } from '@dfinity/principal';
 export const useCampaign = () => {
 
     const [campaigns, setCampaigns] = useState<Campaign[]>([])
@@ -8,7 +9,7 @@ export const useCampaign = () => {
     const [loading, setLoading] = useState<boolean>(false)
     const [error, setError] = useState<string | null>(null)
 
-    const fetchAllCampaing = async  () => {
+    const fetchAllCampaing = async () => {
         setLoading(true)
         try {
             const result = await Fundasi_backend.getAllCampaigns()
@@ -18,13 +19,13 @@ export const useCampaign = () => {
         } finally {
             setLoading(false)
         }
-    } 
+    }
 
-    const fetchDetailCampaing = async  (campaignId: bigint) => {
-        setLoading  (true)
+    const fetchDetailCampaing = async (campaignId: bigint) => {
+        setLoading(true)
         try {
             const result = await Fundasi_backend.getDetailCampaign(campaignId)
-            if (result.length){
+            if (result.length) {
                 setCampaign(result[0])
             } else {
                 setCampaign(null)
@@ -35,12 +36,24 @@ export const useCampaign = () => {
             setLoading(false)
         }
     }
-    
-    const fetchAddCampaign = async  (newCampaign : Campaign) : Promise<Result_1> => {
-        setLoading  (true)
+
+    const fetchCampaignByOwner = async (ownerId: Principal) => {
+        setLoading(true)
+        try {
+            const result = await Fundasi_backend.getCampaignByOwner(ownerId)
+            setCampaigns(result)
+        } catch (error) {
+            setError(String(error))
+        } finally {
+            setLoading(false)
+        }
+    }
+
+    const fetchAddCampaign = async (newCampaign: Campaign): Promise<Result_1> => {
+        setLoading(true)
         try {
             const result = await Fundasi_backend.addCampaign(newCampaign)
-            if('ok' in result){
+            if ('ok' in result) {
                 setCampaign(result.ok)
             } else {
                 setError(result.err)
@@ -52,13 +65,13 @@ export const useCampaign = () => {
         } finally {
             setLoading(false)
         }
-    } 
+    }
 
-    const fetchUpdateCampaign = async  (campaignId : bigint , updatedCampaign : Campaign) : Promise<Result_1> => {
-        setLoading  (true)
+    const fetchUpdateCampaign = async (campaignId: bigint, updatedCampaign: Campaign): Promise<Result_1> => {
+        setLoading(true)
         try {
-            const result = await Fundasi_backend.updateCampaign(campaignId , updatedCampaign)
-            if('ok' in result){
+            const result = await Fundasi_backend.updateCampaign(campaignId, updatedCampaign)
+            if ('ok' in result) {
                 setCampaign(result.ok)
             } else {
                 setError(result.err)
@@ -70,13 +83,13 @@ export const useCampaign = () => {
         } finally {
             setLoading(false)
         }
-    } 
+    }
 
-    const fetchDeleteCampaign = async  (campaignId : bigint) : Promise<Result_3> => {
-        setLoading  (true)
+    const fetchDeleteCampaign = async (campaignId: bigint): Promise<Result_3> => {
+        setLoading(true)
         try {
             const result = await Fundasi_backend.deleteCampaign(campaignId)
-            if('ok' in result){
+            if ('ok' in result) {
                 setCampaign(null)
             } else {
                 setError(result.err)
@@ -88,22 +101,23 @@ export const useCampaign = () => {
         } finally {
             setLoading(false)
         }
-    } 
+    }
 
 
-  useEffect(() => {
-    fetchAllCampaing();
-  }, []);
+    useEffect(() => {
+        fetchAllCampaing();
+    }, []);
 
-  return {
-    campaign,
-    campaigns,
-    loading,
-    error,
-    fetchAllCampaing,
-    fetchDetailCampaing,
-    fetchAddCampaign,
-    fetchUpdateCampaign,
-    fetchDeleteCampaign,
-  };
+    return {
+        campaign,
+        campaigns,
+        loading,
+        error,
+        fetchAllCampaing,
+        fetchDetailCampaing,
+        fetchAddCampaign,
+        fetchCampaignByOwner,
+        fetchUpdateCampaign,
+        fetchDeleteCampaign,
+    };
 };

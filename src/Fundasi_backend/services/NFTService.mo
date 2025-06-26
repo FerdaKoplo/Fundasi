@@ -14,7 +14,8 @@ module {
     campaignId: Nat,
     ownerId: Principal,
     level: Text,
-    metadata: NFT.Metadata
+    metadata: NFT.Metadata,
+    price: Nat
   ) : (NFT.NFT, Nat) {
     let nft: NFT.NFT = {
       id = nextId;
@@ -22,6 +23,7 @@ module {
       ownerId = ownerId;
       level = level;
       metadata = metadata;
+      price = price;
     };
     nfts.put(nextId, nft);
     (nft, nextId + 1);
@@ -94,6 +96,7 @@ module {
             ("image", nft.metadata.imageUrl),
             ("reward", nft.metadata.reward),
             ("level", nft.level),
+            ("price", Nat.toText(nft.price)),
         ];
         };
     };

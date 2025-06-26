@@ -1,15 +1,20 @@
 import React from "react";
+import { FaUser } from "react-icons/fa";
+import { Link } from "react-router-dom";
 
 interface NavbarProps {
   search: string;
-  setSearch: (value: string) => void;
+  setSearch: (value: string) => void
 }
 
 const Navbar: React.FC<NavbarProps> = ({ search, setSearch }) => {
   return (
-    <div className="flex items-center justify-between mb-6 relative">
-      <h1 className="text-2xl font-bold green-gradient">Fundasi</h1>
-      <div className="absolute left-1/2 transform -translate-x-1/2 top-0 mt-0 w-full max-w-lg">
+    <div className="flex items-center bg-black justify-between p-6 sticky top-0">
+      <Link to={"/campaigns"}>
+        <h1 className="text-2xl font-bold green-gradient">Fundasi</h1>
+      </Link>
+
+      <div className="top-0 mt-0 w-full max-w-lg">
         <div className="relative">
           <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
             <svg
@@ -36,18 +41,15 @@ const Navbar: React.FC<NavbarProps> = ({ search, setSearch }) => {
           />
         </div>
       </div>
-      <div className="w-8 h-8 rounded-full bg-gradient-to-r from-[#398267] to-[#A5CC86] flex items-center justify-center">
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          fill="white"
-          viewBox="0 0 24 24"
-          className="w-5 h-5"
-        >
-          <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" />
-        </svg>
-      </div>
+      <Link to={"/user-profile"}>
+        <div className="w-8 h-8 rounded-full bg-gradient-to-r from-[#398267] to-[#A5CC86] flex items-center justify-center">
+          <div className="text-[#A5CC86] text-xs bg-black w-6 h-6 rounded-full flex justify-center items-center">
+            <FaUser />
+          </div>
+        </div>
+      </Link>
     </div>
-  );
-};
+  )
+}
 
-export default Navbar;
+export default Navbar

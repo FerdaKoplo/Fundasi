@@ -32,6 +32,11 @@ module ICRC37 {
       }
     };
 
+    public func supported_standards() : [(Text, Text)] {
+        [("ICRC-7", "https://github.com/dfinity/ICRC/tree/main/standards/ICRC-7"), 
+        ("ICRC-37", "https://github.com/dfinity/ICRC/tree/main/standards/ICRC-37")]
+    };
+
     public func name() : ?Text = state.name;
     public func symbol() : ?Text = state.symbol;
     public func description() : ?Text = state.description;

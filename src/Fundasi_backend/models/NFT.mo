@@ -15,6 +15,7 @@ module {
     campaignId: Nat;      
     ownerId: Principal;   
     level: Text;          
-    metadata: Metadata;   
+    metadata: Metadata;  
+    price: Nat; 
   };
 }
