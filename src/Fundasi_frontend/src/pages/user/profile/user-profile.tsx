@@ -8,10 +8,13 @@ import UserCampaign from "../../../components/detail_profile_pages/user-campaign
 import TrustPointChart from "../../../components/diagram/trust-point-chart";
 import NavProfile from "../../../components/nav/profile/nav-profile";
 import Button from "../../../components/button/Button";
+import { Campaign } from "../../../../../declarations/Fundasi_backend/Fundasi_backend.did";
 
 const UserProfile = () => {
     const [activeTab, setActiveTab] = useState<'about' | 'campaigns' | 'trustpoint' | 'contribution'>('about')
     const { user } = useAuth()
+    const [selectedCampaign, setSelectedCampaign] = useState<Campaign | null>(null)
+    const [isEditMode, setIsEditMode] = useState(false)
 
     return (
         <div className="bg-black px-32 ">
@@ -57,9 +60,26 @@ const UserProfile = () => {
                         <div className="p-10 w-full flex flex-col px-4 text-gray-300 text-sm ">
                             <div className="flex items-center justify-between">
                                 <Button text={"Create Campaign"} link={"/add-campaign"}></Button>
-                                <Button text={"Edit Campaign"} link={"/edit-campaign"}></Button>
+                                <Button onClick={() => {
+                                    setIsEditMode(!isEditMode)
+                                    setSelectedCampaign(null)
+                                }} text={"Edit Campaign"} link={undefined}></Button>
                             </div>
-                            <UserCampaign />
+                            <UserCampaign
+                                isEditMode={isEditMode}
+                                onCampaignSelect={(campaign) => {
+                                    setSelectedCampaign(campaign);
+                                }}
+                            />
+                            {selectedCampaign && isEditMode && (
+                                <div className="mt-5 p-4 flex flex-col gap-5  border rounded-lg text-gray-300">
+                                    <h3>Selected Campaign: {selectedCampaign.title}</h3>
+                                    <Button
+                                        text="Edit this campaign"
+                                        link={`/edit-campaign/${selectedCampaign.id}`} 
+                                    />
+                                </div>
+                            )}
                         </div>
                     )}
                     {activeTab === 'trustpoint' && (

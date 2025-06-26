@@ -40,7 +40,7 @@ export const useCampaign = () => {
     const fetchCampaignByOwner = async (ownerId: Principal) => {
         setLoading(true)
         try {
-            const result = await Fundasi_backend.getCampaignByOwner(ownerId)
+            const result =  await Fundasi_backend.getCampaignByOwner(ownerId)
             setCampaigns(result)
         } catch (error) {
             setError(String(error))
