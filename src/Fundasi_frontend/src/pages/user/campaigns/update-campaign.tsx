@@ -211,7 +211,7 @@ const UpdateCampaign = () => {
     } else {
       console.error("Update failed:", result.err);
     }
-  };
+  }
   
   return (
     <div className="bg-black">
@@ -269,7 +269,6 @@ const UpdateCampaign = () => {
               </div>
             </div>
 
-            {/* Right: About + Rewards */}
             <div className="bg-gradient-to-r from-black to-green-950 p-2 rounded-lg space-y-6">
               <div className="bg-black p-4 rounded-lg">
                 <h3 className="text-green-300 font-bold text-xl">About Sections (Markdown Supported)</h3>
@@ -411,7 +410,7 @@ const UpdateCampaign = () => {
         </form>
       </div>
     </div>
-  );
-};
+  )
+}
 
-export default UpdateCampaign;
+export default UpdateCampaign

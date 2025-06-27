@@ -9,12 +9,26 @@ import TrustPointChart from "../../../components/diagram/trust-point-chart";
 import NavProfile from "../../../components/nav/profile/nav-profile";
 import Button from "../../../components/button/Button";
 import { Campaign } from "../../../../../declarations/Fundasi_backend/Fundasi_backend.did";
+import { useCampaign } from "../../../hooks/useCampaign";
 
 const UserProfile = () => {
     const [activeTab, setActiveTab] = useState<'about' | 'campaigns' | 'trustpoint' | 'contribution'>('about')
     const { user } = useAuth()
     const [selectedCampaign, setSelectedCampaign] = useState<Campaign | null>(null)
     const [isEditMode, setIsEditMode] = useState(false)
+    const { fetchDeleteCampaign } = useCampaign()
+
+    const handleDeleteCampaign = async () => {
+        if (!selectedCampaign || selectedCampaign.id === undefined) return
+        const result = await fetchDeleteCampaign(selectedCampaign?.id)
+
+        if ('ok' in result) {
+            alert("Campaign deleted successfully")
+            setSelectedCampaign(null)
+        } else {
+            alert("Failed to delete campaign: " + result.err)
+        }
+    }
 
     return (
         <div className="bg-black px-32 ">
@@ -74,10 +88,13 @@ const UserProfile = () => {
                             {selectedCampaign && isEditMode && (
                                 <div className="mt-5 p-4 flex flex-col gap-5  border rounded-lg text-gray-300">
                                     <h3>Selected Campaign: {selectedCampaign.title}</h3>
-                                    <Button
-                                        text="Edit this campaign"
-                                        link={`/edit-campaign/${selectedCampaign.id}`} 
-                                    />
+                                    <div className="flex justify-between items-center">
+                                        <Button
+                                            text="Edit this campaign"
+                                            link={`/edit-campaign/${selectedCampaign.id}`}
+                                        />
+                                        <Button text={"Delete this campaign"} onClick={() => handleDeleteCampaign()}></Button>
+                                    </div>
                                 </div>
                             )}
                         </div>
