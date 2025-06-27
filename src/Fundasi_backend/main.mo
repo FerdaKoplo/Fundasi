@@ -28,6 +28,34 @@ actor Main {
     adminPrincipal : Principal;
   };
   // state
+  stable var config : ?Config = null;
+  public shared(msg) func initConfig(cfg: Config): async () {
+    config := ?cfg;
+  };
+
+  private func getConfig(): Config {
+    switch (config) {
+      case (null) Debug.trap("❌ Config belum diinisialisasi");
+      case (?cfg) cfg;
+    };
+  };
+
+  private func getTokenCanister(): actor {
+    icrc1_balance_of: ({ owner: Principal; subaccount: ?[Nat8] }) -> async Nat;
+    icrc2_transfer_from: ({
+      from: { owner: Principal; subaccount: ?[Nat8] };
+      to: { owner: Principal; subaccount: ?[Nat8] };
+      amount: Nat;
+      spender_subaccount: ?[Nat8];
+      fee: ?Nat;
+      memo: ?[Nat8];
+      created_at_time: ?Nat64;
+    }) -> async ICRC2Types.TransferFromResult;
+  } {
+    let cfg = getConfig();
+    actor (Principal.toText(cfg.tokenCanister))
+  };
+
   stable var stableUser: [User.User] = [] : [User.User];
   var userMap : HashMap.HashMap<Principal, User.User> = HashMap.HashMap(0, Principal.equal, Principal.hash);
 
@@ -46,20 +74,6 @@ actor Main {
   var purchaseLogs: [NFT.PurchaseLog] = [];
   stable var stablePurchaseLogs: [NFT.PurchaseLog] = [];
 
-  let TokenCanister = actor("uxrrr-q7777-77774-qaaaq-cai") : actor {
-    icrc1_balance_of: ({ owner: Principal; subaccount: ?[Nat8] }) -> async Nat;
-      icrc2_transfer_from: ({
-      from: { owner: Principal; subaccount: ?[Nat8] };
-      to: { owner: Principal; subaccount: ?[Nat8] };
-      amount: Nat;
-      spender_subaccount: ?[Nat8];
-      fee: ?Nat;
-      memo: ?[Nat8];
-      created_at_time: ?Nat64;
-    }) -> async ICRC2Types.TransferFromResult;
-  };
-
-
   public shared(msg) func initCanisterId(): async () {
     if (canisterId == null) {
       canisterId := ?Principal.fromActor(Main);
@@ -74,7 +88,7 @@ actor Main {
       case (?cid) {
         icrc37_state := ICRC37.init(icrc37_state, #v0_1_0(#id), Icrc37Environment.defaultConfig(), cid);
         let env = get_icrc37_environment(cid);
-        _icrc37 := ?ICRC37.ICRC37(?icrc37_state, cid, env, Principal.fromText("wovri-ri4dl-dydpi-256ee-a3f6e-huymv-ueq27-hxkjx-cuxjs-rp7ha-xqe"));
+        _icrc37 := ?ICRC37.ICRC37(?icrc37_state, cid, env, getConfig().adminPrincipal);
       };
     };
   };
@@ -89,12 +103,12 @@ actor Main {
         switch (canisterId) {
           case (null) {
             let cid = Principal.fromActor(Main);
-            let instance = ICRC37.ICRC37(?icrc37_state, cid, get_icrc37_environment(cid), Principal.fromText("wovri-ri4dl-dydpi-256ee-a3f6e-huymv-ueq27-hxkjx-cuxjs-rp7ha-xqe"));
+            let instance = ICRC37.ICRC37(?icrc37_state, cid, get_icrc37_environment(cid), getConfig().adminPrincipal);
             _icrc37 := ?instance;
             instance;
           };
           case (?cid) {
-            let instance = ICRC37.ICRC37(?icrc37_state, cid, get_icrc37_environment(cid), Principal.fromText("wovri-ri4dl-dydpi-256ee-a3f6e-huymv-ueq27-hxkjx-cuxjs-rp7ha-xqe"));
+            let instance = ICRC37.ICRC37(?icrc37_state, cid, get_icrc37_environment(cid), getConfig().adminPrincipal);
             _icrc37 := ?instance;
             instance;
           };
@@ -143,7 +157,7 @@ actor Main {
 
   
     // NFT
-    public shared(msg) func mintRewardNFT(
+  public shared(msg) func mintRewardNFT(
       campaignId: Nat,
       level: Text,
       metadata: NFT.Metadata,
@@ -163,34 +177,36 @@ actor Main {
       return nft;
     };
 
+
    public shared(msg) func purchaseNFT(tokenId: Nat): async Icrc37Types.TransferResult {
-  let caller = msg.caller;
+      let caller = msg.caller;
 
-  switch (NFTService.getNFTById(nftMap, tokenId)) {
-      case null return #Err("NFT not found");
-      case (?nft) {
-        if (nft.ownerId != Principal.fromActor(Main) or not nft.isAvailable) {
-          return #Err("NFT not available for purchase");
-        };
+      switch (NFTService.getNFTById(nftMap, tokenId)) {
+          case null return #Err("NFT not found");
+          case (?nft) {
+            if (nft.ownerId != Principal.fromActor(Main) or not nft.isAvailable) {
+              return #Err("NFT not available for purchase");
+            };
 
-        // 1. Cek saldo user
-        let account = { owner = caller; subaccount = null };
-        let balance = await TokenCanister.icrc1_balance_of(account);
+            // 1. Cek saldo user
+            let account = { owner = caller; subaccount = null };
+            let tokenCanister = getTokenCanister();
+            let balance = await tokenCanister.icrc1_balance_of(account);
 
-        if (balance < nft.price) {
-          return #Err("Insufficient token balance");
-        };
+            if (balance < nft.price) {
+              return #Err("Insufficient token balance");
+            };
 
-        // 2. Transfer token dari user ke canister
-        let transferTokenResult = await TokenCanister.icrc2_transfer_from({
-          from = { owner = caller; subaccount = null };
-          to = { owner = Principal.fromActor(Main); subaccount = null };
-          amount = nft.price;
-          spender_subaccount = null;
-          fee = null;
-          memo = null;
-          created_at_time = null;
-        });
+            // 2. Transfer token dari user ke canister
+            let transferTokenResult = await tokenCanister.icrc2_transfer_from({
+              from = { owner = caller; subaccount = null };
+              to = { owner = Principal.fromActor(Main); subaccount = null };
+              amount = nft.price;
+              spender_subaccount = null;
+              fee = null;
+              memo = null;
+              created_at_time = null;
+            });
 
         switch (transferTokenResult) {
           case (#Err(err)) {
@@ -243,7 +259,7 @@ actor Main {
   };
 
     public shared(msg) func adminPurchaseNFT(tokenId: Nat, buyer: Principal): async Icrc37Types.TransferResult {
-      let adminPrincipal = Principal.fromText("wovri-ri4dl-dydpi-256ee-a3f6e-huymv-ueq27-hxkjx-cuxjs-rp7ha-xqe");
+      let adminPrincipal = getConfig().adminPrincipal;
 
       if (msg.caller != adminPrincipal) {
         return #Err("Unauthorized bukan admin principal");
@@ -298,6 +314,7 @@ actor Main {
 
   public shared(msg) func claimNFT(tokenId: Nat): async Icrc37Types.TransferResult {
     let caller = msg.caller;
+    let tokenCanister = getTokenCanister();
 
     switch (NFTService.getNFTById(nftMap, tokenId)) {
       case null return #Err("NFT not found");
@@ -310,7 +327,7 @@ actor Main {
           owner = Principal.fromActor(Main);
           subaccount = null;
         };
-        let currentBalance = await TokenCanister.icrc1_balance_of(canisterAccount);
+        let currentBalance = await tokenCanister.icrc1_balance_of(canisterAccount);
 
         if (currentBalance < nft.price) {
           return #Err("Payment not received yet");
@@ -351,6 +368,46 @@ actor Main {
 
   public query func getPurchaseLogs() : async [NFT.PurchaseLog] {
     purchaseLogs;
+  };
+
+  public shared(msg) func claimInitialToken(): async Result.Result<Text, Text> {
+    let caller = msg.caller;
+
+    let amount: Nat = 100_000_000;
+
+    switch (userMap.get(caller)) {
+      case null return #err("User belum terdaftar");
+      case (?user) {
+        if (user.trustPoints > 0) {
+          return #err("Token sudah pernah diklaim");
+        };
+
+        let token = getTokenCanister();
+        let toAccount = {
+          owner = caller;
+          subaccount = null;
+        };
+
+        let transferResult = await token.icrc2_transfer_from({
+          from = { owner = getConfig().adminPrincipal; subaccount = null };
+          to = toAccount;
+          amount = amount;
+          spender_subaccount = null;
+          fee = null;
+          memo = null;
+          created_at_time = null;
+        });
+
+        switch (transferResult) {
+          case (#Ok(_)) {
+            let updated = { user with trustPoints = amount };
+            userMap.put(caller, updated);
+            return #ok("Token berhasil diklaim");
+          };
+          case (#Err(_)) return #err("Transfer token gagal");
+        };
+      };
+    };
   };
 
   
