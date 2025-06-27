@@ -17,5 +17,13 @@ module {
     level: Text;          
     metadata: Metadata;  
     price: Nat; 
+    isAvailable: Bool;
+  };
+
+  public type PurchaseLog = {
+    user: Principal;
+    nftId: Nat;
+    price: Nat;
+    time: Int;
   };
 }

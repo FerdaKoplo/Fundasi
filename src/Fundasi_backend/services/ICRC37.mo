@@ -2,6 +2,7 @@ import ICRC37Types "../models/ICRC37Types";
 import Principal "mo:base/Principal";
 import Nat "mo:base/Nat";
 import Text "mo:base/Text";
+import Debug "mo:base/Debug";
 
 module ICRC37 {
   public type State = ICRC37Types.CollectionState;
@@ -13,7 +14,8 @@ module ICRC37 {
   public class ICRC37(
     initState: ?State,
     deployer: Principal,
-    env: Environment
+    env: Environment,
+    adminPrincipal: Principal
   ) {
     private let state: State = switch initState {
       case (?s) s;
@@ -52,9 +54,13 @@ module ICRC37 {
 
     public func tokens_of(owner: Principal) : [Nat] = env.tokens_of(owner);
 
-    public func transfer(caller: Principal, arg: TransferArg) : TransferResult {
-      if (arg.from.owner != caller) {
-        return #Err("Unauthorized");
+    public func transfer(caller: Principal, arg: TransferArg): TransferResult {
+      Debug.print("✅ transfer debug — caller: " # Principal.toText(caller));
+      Debug.print("✅ transfer debug — arg.from.owner: " # Principal.toText(arg.from.owner));
+      Debug.print("✅ transfer debug — adminPrincipal internal: " # Principal.toText(adminPrincipal));
+      // Allow if caller is from or if caller is authorized admin
+      if (not (arg.from.owner == caller or caller == adminPrincipal)) {
+        return #Err("Unauthorized transfer");
       };
 
       switch (env.icrc7.transfer_from) {

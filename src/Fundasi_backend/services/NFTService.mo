@@ -5,6 +5,8 @@ import Nat "mo:base/Nat";
 import HashMap "mo:base/HashMap";
 import Iter "mo:base/Iter";
 import Array "mo:base/Array";
+import Result "mo:base/Result";
+import ICRC37Types "../models/ICRC37Types";
 
 module {
   // Mint NFT baru
@@ -24,9 +26,41 @@ module {
       level = level;
       metadata = metadata;
       price = price;
+      isAvailable = true;
     };
     nfts.put(nextId, nft);
     (nft, nextId + 1);
+  };
+
+  public func transferNFT(
+    nfts: HashMap.HashMap<Nat, NFT.NFT>,
+    arg: ICRC37Types.TransferArg
+  ) : Result.Result<[Nat], Text> = do {
+    if (arg.token_ids.size() == 0) {
+      return #err("No token ID specified");
+    };
+
+    let tokenId = arg.token_ids[0];
+
+    switch (nfts.get(tokenId)) {
+      case null {
+        return #err("Token not found");
+      };
+      case (?nft) {
+        if (nft.ownerId != arg.from.owner) {
+          return #err("Caller is not the owner of this NFT");
+        };
+
+        let updatedNft = {
+          nft with
+          ownerId = arg.to.owner;
+          isAvailable = false;
+        };
+
+        nfts.put(tokenId, updatedNft);
+        return #ok([tokenId]);
+      };
+    };
   };
 
   public func getNFTsByOwner(
@@ -40,7 +74,11 @@ module {
         }
     );
     };
-
+  public func getAllNFTs(
+    nfts: HashMap.HashMap<Nat, NFT.NFT>
+  ) : [NFT.NFT] {
+    Iter.toArray(nfts.vals());
+  };
 
   public func getNFTById(
     nfts: HashMap.HashMap<Nat, NFT.NFT>,
