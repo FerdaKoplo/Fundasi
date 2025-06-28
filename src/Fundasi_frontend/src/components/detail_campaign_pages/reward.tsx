@@ -1,4 +1,5 @@
 import React from "react";
+import { useToken } from "../../hooks/useToken";
 
 interface RewardProps {
   rewards: {
@@ -12,9 +13,14 @@ interface RewardProps {
   selectedIndex: number;
 }
 
-const Reward: React.FC<RewardProps> = ({ rewards, selectedIndex }) => {
+export const Reward: React.FC<RewardProps> = ({ rewards, selectedIndex }) => {
   const selected = rewards[selectedIndex];
+  const { purchaseNFT, isPurchasing, purchaseSuccess, purchaseError } =
+    useToken();
 
+  const handleFund = () => {
+    purchaseNFT(selectedIndex);
+  };
   return (
     <div className="flex flex-col md:flex-row gap-10 text-white">
       {/* Kartu NFT */}
@@ -49,8 +55,14 @@ const Reward: React.FC<RewardProps> = ({ rewards, selectedIndex }) => {
           <span>Ships Worldwide</span>
         </div>
 
-        <button className="w-full py-2 rounded-full black-gradient hover:scale-105 active:scale-95 transition-transform duration-200">
-          Fund {selected.nftPrice.toString()} NFT
+        <button
+          className="w-full py-2 rounded-full black-gradient hover:scale-105 active:scale-95 transition-transform duration-200 disabled:opacity-50"
+          onClick={handleFund}
+          disabled={isPurchasing}
+        >
+          {isPurchasing
+            ? "Processing..."
+            : `Fund ${selected.nftPrice.toString()} NFT`}
         </button>
       </div>
 
@@ -71,6 +83,12 @@ const Reward: React.FC<RewardProps> = ({ rewards, selectedIndex }) => {
           </div>
         </div>
       </div>
+      {purchaseSuccess && (
+        <p className="text-green-400 text-sm mt-2">{purchaseSuccess}</p>
+      )}
+      {purchaseError && (
+        <p className="text-red-400 text-sm mt-2">{purchaseError}</p>
+      )}
     </div>
   );
 };

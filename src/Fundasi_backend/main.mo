@@ -5,12 +5,12 @@ import Array "mo:base/Array";
 import HashMap "mo:base/HashMap";
 import Principal "mo:base/Principal";
 import Result "mo:base/Result";
-import Iter "mo:base/Iter";
-import Nat "mo:base/Nat";
+import Campaign "models/Campaign";
 import Hash "mo:base/Hash";
 import Time "mo:base/Time";
+import Iter "mo:base/Iter";
+import Nat "mo:base/Nat";
 import UserService "services/UserService";
-import Campaign "models/Campaign";
 import CampaignService "services/CampaignService";
 import NFT "models/NFT";
 import NFTService "services/NFTService";
@@ -21,6 +21,8 @@ import Env "env";
 import ICRC2Types "models/ICRC2Types";
 import Debug "mo:base/Debug";
 import Nat64 "mo:base/Nat64";
+import Review "models/Review";
+import ReviewService "services/ReviewService";
 
 actor Main {
   type Config = {
@@ -42,15 +44,14 @@ actor Main {
 
   private func getTokenCanister(): actor {
     icrc1_balance_of: ({ owner: Principal; subaccount: ?[Nat8] }) -> async Nat;
-    icrc2_transfer_from: ({
-      from: { owner: Principal; subaccount: ?[Nat8] };
-      to: { owner: Principal; subaccount: ?[Nat8] };
-      amount: Nat;
-      spender_subaccount: ?[Nat8];
-      fee: ?Nat;
-      memo: ?[Nat8];
-      created_at_time: ?Nat64;
-    }) -> async ICRC2Types.TransferFromResult;
+    icrc1_transfer: ({
+    to: { owner: Principal; subaccount: ?[Nat8] };
+    amount: Nat;
+    fee: ?Nat;
+    memo: ?[Nat8];
+    from_subaccount: ?[Nat8];
+    created_at_time: ?Nat64;
+     }) -> async ICRC2Types.TransferFromResult;
   } {
     let cfg = getConfig();
     actor (Principal.toText(cfg.tokenCanister))
@@ -58,6 +59,9 @@ actor Main {
 
   stable var stableUser: [User.User] = [] : [User.User];
   var userMap : HashMap.HashMap<Principal, User.User> = HashMap.HashMap(0, Principal.equal, Principal.hash);
+
+  stable var stableReviews : [Review.Review] = [] : [Review.Review];
+  var reviewsMap : HashMap.HashMap<Principal, Review.Review> = HashMap.HashMap(0, Principal.equal, Principal.hash);
 
   stable var stableCampaigns : [Campaign.Campaign] = [] : [Campaign.Campaign];
   var campaignMap : HashMap.HashMap<Nat, Campaign.Campaign> = HashMap.HashMap<Nat, Campaign.Campaign>(0, Nat.equal, Hash.hash);
@@ -118,9 +122,9 @@ actor Main {
     };
   };
 
-  for (user in stableUser.vals()) {
-    userMap.put(user.id, user);
-  };
+  // for (user in stableUser.vals()) {
+  //   userMap.put(user.id, user);
+  // };
   
   system func preupgrade() {
     stableUser := Iter.toArray(userMap.vals());
@@ -131,7 +135,17 @@ actor Main {
   
   system func postupgrade() {
     for (user in stableUser.vals()) {
-      userMap.put(user.id, user);
+      let migratedUser : User.User = {
+        id = user.id;
+        username = user.username;
+        trustPoints = user.trustPoints;
+        campaignCount = user.campaignCount;
+        createdAt = user.createdAt;
+        completedCampaigns = user.completedCampaigns;
+        avatarUrl = user.avatarUrl;
+        hasProfile = false; 
+      };
+      userMap.put(user.id, migratedUser);
     };
     for (campaign in stableCampaigns.vals()) {
       campaignMap.put(campaign.id, campaign);
@@ -198,14 +212,13 @@ actor Main {
             };
 
             // 2. Transfer token dari user ke canister
-            let transferTokenResult = await tokenCanister.icrc2_transfer_from({
-              from = { owner = caller; subaccount = null };
-              to = { owner = Principal.fromActor(Main); subaccount = null };
-              amount = nft.price;
-              spender_subaccount = null;
-              fee = null;
-              memo = null;
-              created_at_time = null;
+            let transferTokenResult = await tokenCanister.icrc1_transfer({
+                to = { owner = caller; subaccount = null };
+                amount = nft.price;
+                fee = null;
+                memo = null;
+                from_subaccount = null;
+                created_at_time = null;
             });
 
         switch (transferTokenResult) {
@@ -233,7 +246,8 @@ actor Main {
               created_at_time = null;
             };
 
-            let result = icrc37().transfer(caller, transferArg);
+            let result = icrc37().transfer(Principal.fromActor(Main), transferArg);
+
 
             switch (result) {
               case (#Ok(_)) {
@@ -388,14 +402,13 @@ actor Main {
           subaccount = null;
         };
 
-        let transferResult = await token.icrc2_transfer_from({
-          from = { owner = getConfig().adminPrincipal; subaccount = null };
-          to = toAccount;
-          amount = amount;
-          spender_subaccount = null;
-          fee = null;
-          memo = null;
-          created_at_time = null;
+        let transferResult = await token.icrc1_transfer({
+           to = { owner = caller; subaccount = null };
+            amount = amount;
+            fee = null;
+            memo = null;
+            from_subaccount = null;
+            created_at_time = null;
         });
 
         switch (transferResult) {
@@ -480,6 +493,31 @@ actor Main {
       };
     };
   };
+
+  public shared(msg) func updateUserProfile(username: Text, avatarUrl: ?Text) : async Result.Result<User.User, Text> {
+    let caller = msg.caller;
+    switch (userMap.get(caller)) {
+      case null return #err("User not found");
+      case (?user) {
+        let updated: User.User = {
+          id = user.id;
+          username = username;
+          trustPoints = user.trustPoints;
+          campaignCount = user.campaignCount;
+          completedCampaigns = user.completedCampaigns;
+          createdAt = user.createdAt;
+          avatarUrl = avatarUrl;
+          hasProfile = true; 
+        };
+        userMap.put(caller, updated);
+
+        stableUser := Array.filter<User.User>(stableUser, func(u) { u.id != caller });
+        stableUser := Array.append(stableUser, [updated]);
+
+        return #ok(updated);
+      };
+    };
+  };
   
   public shared(msg) func getUserProfile() : async ?User.User {
     let caller = msg.caller;
@@ -513,8 +551,101 @@ actor Main {
   public query func getDetailCampaign(campaignId : Nat) : async ?Campaign.Campaign {
     return CampaignService.getDetailCampaign(campaignMap, campaignId);
   };
+
+  public query func getCampaignByOwner(ownerId : Principal) : async[Campaign.Campaign] {
+    return CampaignService.getCampaignByOwner(campaignMap, ownerId)
+  };
   
-  public query func getUserByPrincipal(p : Principal) : async ?User.User {
-    return UserService.getUserByPrincipal(userMap, p);
+  public shared query func getUserByPrincipal(p : Principal) : async Result.Result<User.User, Text> {
+    switch (userMap.get(p)) {
+      case (?user) return #ok(user);
+      case null return #err("User not found");
+    }
+  };
+
+  // User Trust Points
+  public shared(_) func upvoteUser(userId : Principal, points : Nat) : async Result.Result<User.User, Text> {
+      let result = UserService.postUpvote(userMap, userId, points);
+      switch (result) {
+          case (?updatedUser) {
+              userMap.put(userId, updatedUser);
+              stableUser := Array.filter<User.User>(stableUser, func(u) { u.id != userId });
+              stableUser := Array.append(stableUser, [updatedUser]);
+              return #ok(updatedUser);
+          };
+          case (null) {
+              return #err("User not found");
+          };
+      };
+  };
+  
+  public shared(_) func devoteUser(userId : Principal, points : Nat) : async Result.Result<User.User, Text> {
+      let result = UserService.postDevote(userMap, userId, points);
+      switch (result) {
+          case (?updatedUser) {
+              userMap.put(userId, updatedUser);
+              stableUser := Array.filter<User.User>(stableUser, func(u) { u.id != userId });
+              stableUser := Array.append(stableUser, [updatedUser]);
+              return #ok(updatedUser);
+          };
+          case (null) {
+              return #err("User not found");
+          };
+      };
+  };
+
+  // Review
+  public shared(msg) func postReview(comment : Text) : async Result.Result<Review.Review, Text> {
+    let caller = msg.caller;
+
+    switch (reviewsMap.get(caller)) {
+        case (?existingReview) {
+            return #err("You have already submitted a review.");
+        };
+        case (null) {
+            switch (userMap.get(caller)) {
+                case (?user) {
+                    let result = ReviewService.postReview(caller, user, comment);
+                    switch (result) {
+                        case (#ok(newReview)) {
+                            reviewsMap.put(caller, newReview);
+                            stableReviews := Array.append(stableReviews, [newReview]);
+                            return #ok(newReview);
+                        };
+                        case (#err(error)) {
+                            return #err(error);
+                        };
+                    };
+                };
+                case (null) {
+                    return #err("User not found.");
+                };
+            };
+        };
+      };
+    };
+
+    public shared(msg) func deleteReview() : async Result.Result<Review.Review, Text> {
+    let caller = msg.caller;
+
+    switch (reviewsMap.get(caller)) {
+        case (?rev) {
+            let _ = reviewsMap.remove(caller);
+            
+            stableReviews := Array.filter<Review.Review>(
+                stableReviews,
+                func(r) { r.user.id != caller }
+            );
+            
+            return #ok(rev);
+        };
+        case (null) {
+            return #err("Review tidak ditemukan untuk user ini.");
+        };
+    };
+  };
+
+  public query func getAllReviews() : async [Review.Review] {
+    return ReviewService.getAllReviews(reviewsMap);
   };
 };

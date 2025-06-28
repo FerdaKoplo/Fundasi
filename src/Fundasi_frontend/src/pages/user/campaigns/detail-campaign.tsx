@@ -7,8 +7,14 @@ import SidebarAbout from "../../../components/sidebar/sidebar-about";
 import NavCampaign from "../../../components/nav/campaign/nav-campaign";
 import About from "../../../components/detail_campaign_pages/about";
 import Author from "../../../components/detail_campaign_pages/author";
+import useVotes from "../../../hooks/useVotes";
+import { useAuth } from "../../../context/auth-context";
+import { Principal } from "@dfinity/principal";
 import SidebarReward from "../../../components/sidebar/sidebar-reward";
 import Reward from "../../../components/detail_campaign_pages/reward";
+import useReview from "../../../hooks/useReview";
+import ReviewList from "../../../components/detail_campaign_pages/review/review-list";
+import ReviewPost from "../../../components/detail_campaign_pages/review/review-post";
 
 const DetailCampaign = () => {
   const { id } = useParams();
@@ -17,7 +23,17 @@ const DetailCampaign = () => {
     "campaign" | "author" | "reward" | "reviews"
   >("campaign");
   const { campaign, loading, error, fetchDetailCampaing } = useCampaign();
+  const { principalId } = useAuth();
+  const { upvote, devote } = useVotes();
+  const {
+    reviews,
+    fetchAllReview,
+    loading: reviewLoading,
+    error: reviewError,
+    postReview,
+  } = useReview();
   const [selectedRewardIndex, setSelectedRewardIndex] = useState(0);
+  const [selectedAboutIndex, setSelectedAboutIndex] = useState(0);
 
   useEffect(() => {
     if (id) {
@@ -36,6 +52,37 @@ const DetailCampaign = () => {
 
     return () => clearInterval(interval);
   }, [campaign?.media?.imageUrl]);
+
+  useEffect(() => {
+    if (activeTab === "reviews") {
+      fetchAllReview();
+    }
+  }, [activeTab]);
+
+  const handleUpvote = async () => {
+    if (!principalId) {
+      alert("Please Login First");
+      return;
+    }
+
+    const userPrincipal = Principal.fromText(principalId);
+    await upvote(userPrincipal, BigInt(10));
+    alert("sukses memberi upvote!");
+  };
+
+  const handleDevote = async () => {
+    if (!principalId) {
+      alert("Please Login First");
+      return;
+    }
+    const userPrincipal = Principal.fromText(principalId);
+    await devote(userPrincipal, BigInt(5));
+  };
+
+  const handleSubmitReview = async (comment: string) => {
+    await postReview(comment);
+    await fetchAllReview();
+  };
 
   return (
     <div className="bg-black space-y-12 px-32 text-white min-h-screen p-10">
@@ -123,7 +170,10 @@ const DetailCampaign = () => {
           <div className="flex gap-4 mt-4">
             <div className="flex items-center gap-5">
               <div className="rounded-full bg-gradient-to-t p-1 from-green-700 to-green-400">
-                <button className="flex rounded-full p-2 bg-black text-white items-center gap-2 ">
+                <button
+                  onClick={handleUpvote}
+                  className="flex rounded-full p-2 bg-black text-white items-center gap-2 "
+                >
                   <FaCheck />
                 </button>
               </div>
@@ -131,7 +181,10 @@ const DetailCampaign = () => {
             </div>
             <div className="flex items-center gap-5">
               <div className="rounded-full bg-gradient-to-t p-1 from-red-700 to-red-400">
-                <button className="flex rounded-full p-2 bg-black  items-center gap-2 ">
+                <button
+                  onClick={handleDevote}
+                  className="flex rounded-full p-2 bg-black  items-center gap-2 "
+                >
                   <ImCross />
                 </button>
               </div>
@@ -144,9 +197,13 @@ const DetailCampaign = () => {
       <NavCampaign activeTab={activeTab} onTabChange={setActiveTab} />
 
       {activeTab === "campaign" && (
-        <div className="flex mt-8">
+        <div className="flex gap-10 mt-8">
           <div className="w-1/4">
-            <SidebarAbout aboutSections={campaign?.about ?? []} />
+            <SidebarAbout
+              aboutSections={campaign?.about ?? []}
+              selectedIndex={selectedAboutIndex}
+              onSelect={setSelectedAboutIndex}
+            />
           </div>
           <div className="w-3/4">
             <About aboutSections={campaign?.about ?? []} />
@@ -176,7 +233,24 @@ const DetailCampaign = () => {
           </div>
         </div>
       )}
-      {activeTab === "reviews" && <div>{/* Render Reviews here */}</div>}
+      {activeTab === "reviews" && (
+        <div className="w-3/4">
+          <ReviewPost
+            onSubmit={(comment) => {
+              handleSubmitReview(comment);
+            }}
+          />
+          {reviewLoading && <p>Loading reviews...</p>}
+          {reviewError && <p className="text-red-500">{reviewError}</p>}
+          {reviews.length > 0 ? (
+            <ReviewList reviews={reviews} />
+          ) : (
+            <p className="text-gray-400">
+              No reviews yet. Be the first to review!
+            </p>
+          )}
+        </div>
+      )}
     </div>
   );
 };

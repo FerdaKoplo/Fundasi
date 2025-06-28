@@ -10,6 +10,15 @@ module {
         Iter.toArray(campaigns.vals());
     };
 
+    public func getCampaignByOwner(campaigns : Campaign.Campaigns, ownerId : Principal) : [Campaign.Campaign] {
+        Iter.toArray(
+                Iter.filter<Campaign.Campaign>(
+                campaigns.vals(),
+                func(c) { c.owner.id == ownerId }
+            )
+        );
+    };
+
     public func getDetailCampaign(campaign : Campaign.Campaigns, campaignId : Nat) : ?Campaign.Campaign {
         campaign.get(campaignId);
     };

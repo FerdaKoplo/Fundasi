@@ -9,4 +9,8 @@
   .black-gradient {
     @apply bg-gradient-to-b from-[#2D2D2D] via-[#1A1A1A] to-[#111];
   }
+
+  .red-gradient {
+    @apply bg-gradient-to-l from-[#000000] via-[#690202] to-[#af0000];
+  }
 }

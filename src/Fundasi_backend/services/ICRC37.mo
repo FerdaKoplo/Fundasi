@@ -59,6 +59,9 @@ module ICRC37 {
       Debug.print("✅ transfer debug — arg.from.owner: " # Principal.toText(arg.from.owner));
       Debug.print("✅ transfer debug — adminPrincipal internal: " # Principal.toText(adminPrincipal));
       // Allow if caller is from or if caller is authorized admin
+      Debug.print("📌 FROM OWNER: " # Principal.toText(arg.from.owner));
+      Debug.print("📌 CALLER: " # Principal.toText(caller));
+      Debug.print("📌 ADMIN: " # Principal.toText(adminPrincipal));
       if (not (arg.from.owner == caller or caller == adminPrincipal)) {
         return #Err("Unauthorized transfer");
       };

@@ -85,7 +85,7 @@ const NFTMinting = () => {
         }
       }
       alert("Minting complete!");
-      navigate("/dashboard");
+      navigate("/campaigns");
     } catch (error) {
       console.error("Minting error:", error);
       alert("Minting failed. Please try again.");

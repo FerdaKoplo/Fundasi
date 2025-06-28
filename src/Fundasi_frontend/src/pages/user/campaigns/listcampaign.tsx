@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useCampaign } from "../../../hooks/useCampaign";
 import { FaEye } from "react-icons/fa";
 import { Link } from "react-router-dom";
+import Navbar from "../../../components/nav/campaign/nav-menu";
 
 export default function MicroBusinessList() {
   const [search, setSearch] = useState("");
@@ -19,39 +20,8 @@ export default function MicroBusinessList() {
   );
 
   return (
-    <div className="min-h-screen bg-black text-white px-6 py-10">
-      <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold green-gradient">Fundasi</h1>
-        <div className="relative w-full max-w-lg mx-10">
-          <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-            <svg
-              className="w-5 h-5 text-white opacity-60"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              viewBox="0 0 24 24"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M21 21l-4.35-4.35m0 0A7.5 7.5 0 104.5 4.5a7.5 7.5 0 0012.15 12.15z"
-              />
-            </svg>
-          </div>
-          <input
-            type="text"
-            placeholder="Search microbusiness, authors"
-            className="w-full pl-10 pr-4 py-2 rounded-full text-white placeholder-white/60 focus:outline-none black-gradient  bg-opacity-20"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-          />
-        </div>
-        <div className="w-8 h-8 rounded-full border border-green-400 flex items-center justify-center">
-          <div className="w-5 h-5 bg-green-400 rounded-full"></div>
-        </div>
-      </div>
-
+    <div className="min-h-screen bg-black text-white px-32 ">
+      <Navbar search={search} setSearch={setSearch} />
       <p className="text-white text-lg font-medium">
         {campaigns.length.toLocaleString()}{" "}
         <span className="text-primary-light">MicroBusiness</span>

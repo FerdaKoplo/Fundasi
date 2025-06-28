@@ -3,8 +3,11 @@ import { Fundasi_backend } from "../../../declarations/Fundasi_backend";
 import type {
   Campaign,
   Result,
+  Result_1,
   Result_2,
+  Result_3,
 } from "../../../declarations/Fundasi_backend/Fundasi_backend.did";
+import { Principal } from "@dfinity/principal";
 export const useCampaign = () => {
   const [campaigns, setCampaigns] = useState<Campaign[]>([]);
   const [campaign, setCampaign] = useState<Campaign | null>(null);
@@ -39,7 +42,19 @@ export const useCampaign = () => {
     }
   };
 
-  const fetchAddCampaign = async (newCampaign: Campaign): Promise<Result> => {
+  const fetchCampaignByOwner = async (ownerId: Principal) => {
+    setLoading(true);
+    try {
+      const result = await Fundasi_backend.getCampaignByOwner(ownerId);
+      setCampaigns(result);
+    } catch (error) {
+      setError(String(error));
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fetchAddCampaign = async (newCampaign: Campaign): Promise<Result_1> => {
     setLoading(true);
     try {
       const result = await Fundasi_backend.addCampaign(newCampaign);
@@ -60,7 +75,7 @@ export const useCampaign = () => {
   const fetchUpdateCampaign = async (
     campaignId: bigint,
     updatedCampaign: Campaign
-  ): Promise<Result> => {
+  ): Promise<Result_1> => {
     setLoading(true);
     try {
       const result = await Fundasi_backend.updateCampaign(
@@ -81,7 +96,7 @@ export const useCampaign = () => {
     }
   };
 
-  const fetchDeleteCampaign = async (campaignId: bigint): Promise<Result_2> => {
+  const fetchDeleteCampaign = async (campaignId: bigint): Promise<Result_3> => {
     setLoading(true);
     try {
       const result = await Fundasi_backend.deleteCampaign(campaignId);
@@ -111,6 +126,7 @@ export const useCampaign = () => {
     fetchAllCampaing,
     fetchDetailCampaing,
     fetchAddCampaign,
+    fetchCampaignByOwner,
     fetchUpdateCampaign,
     fetchDeleteCampaign,
   };

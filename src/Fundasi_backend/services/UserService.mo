@@ -31,6 +31,7 @@ module {
                     createdAt = Time.now();
                     completedCampaigns = 0;
                     avatarUrl = null;
+                    hasProfile = false;
                 };
                 users.put(userId, newUser);
                 #ok(newUser);
@@ -66,6 +67,7 @@ module {
                 createdAt = user.createdAt;
                 completedCampaigns = user.completedCampaigns;
                 avatarUrl = user.avatarUrl;
+                hasProfile = user.hasProfile;
             };
             users.put(userId, updatedUser);
             return ?updatedUser;
@@ -92,6 +94,7 @@ module {
                 createdAt = user.createdAt;
                 completedCampaigns = user.completedCampaigns;
                 avatarUrl = user.avatarUrl;
+                hasProfile = user.hasProfile;
             };
             users.put(userId, updatedUser);
             return ?updatedUser;
