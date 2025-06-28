@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+
 import { useCampaign } from "../../../hooks/useCampaign";
 import { FaEye } from "react-icons/fa";
 import { Link } from "react-router-dom";
@@ -18,6 +19,7 @@ export default function MicroBusinessList() {
   );
 
   return (
+<<<<<<<<< Temporary merge branch 1
     <div className="min-h-screen bg-black text-white px-6 py-10">
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-2xl font-bold green-gradient">Fundasi</h1>
@@ -50,6 +52,10 @@ export default function MicroBusinessList() {
           <div className="w-5 h-5 bg-green-400 rounded-full"></div>
         </div>
       </div>
+=========
+    <div className="min-h-screen bg-black text-white px-6 py-10 relative">
+      <Navbar search={search} setSearch={setSearch}/>
+>>>>>>>>> Temporary merge branch 2
 
       <p className="text-white text-lg font-medium">
         {campaigns.length.toLocaleString()}{" "}
