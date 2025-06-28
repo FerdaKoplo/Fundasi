@@ -1,0 +1,140 @@
+import React, { useEffect, useState } from 'react'
+import { useParams } from 'react-router-dom';
+import { useCampaign } from '../../../hooks/useCampaign';
+import { FaCheck } from 'react-icons/fa';
+import { ImCross } from "react-icons/im";
+import SidebarAbout from '../../../components/sidebar/sidebar-about';
+import NavCampaign from '../../../components/nav/campaign/nav-campaign';
+import About from '../../../components/detail_campaign_pages/about';
+
+const DetailCampaign = () => {
+
+  const { id } = useParams()
+  const [currentImageIndex, setCurrentImageIndex] = useState(0)
+   const [activeTab, setActiveTab] = useState<'campaign' | 'author' | 'reward' | 'reviews'>('campaign')
+  const { campaign, loading, error, fetchDetailCampaing } = useCampaign()
+
+  useEffect(() => {
+    if (id) {
+      fetchDetailCampaing(BigInt(id));
+    }
+  }, [id])
+
+  useEffect(() => {
+    if (!campaign?.media?.imageUrl) return
+
+    const interval = setInterval(() => {
+      setCurrentImageIndex((prevIndex) =>
+        (prevIndex + 1) % campaign.media.imageUrl.length
+      )
+    }, 3000)
+
+    return () => clearInterval(interval)
+  }, [campaign?.media?.imageUrl])
+
+
+
+  return (
+    <div className="bg-black space-y-10 px-32 text-white min-h-screen p-10">
+      <h1 className="text-3xl font-bold text-center mb-4">Campaign {campaign?.title}</h1>
+      <p className="text-center mb-6">{campaign?.description}</p>
+      <div className="flex flex-col md:flex-row gap-10">
+        <div className="md:w-1/2">
+          {campaign?.media?.imageUrl && campaign.media.imageUrl.length > 0 && (
+            <div className="relative w-full rounded-lg overflow-hidden">
+              <img
+                src={campaign.media.imageUrl[currentImageIndex]}
+                alt={`${campaign?.title ?? "Campaign"} ${currentImageIndex + 1}`}
+                className="rounded-lg w-full h-64 object-cover transition-opacity duration-500"
+              />
+              <div className="absolute bottom-3 left-1/2 transform -translate-x-1/2 flex space-x-2">
+                {(campaign?.media?.imageUrl ?? []).map((_: string, index: number) => (
+                  <div
+                    key={index}
+                    className={`w-3 h-3 rounded-full ${index === currentImageIndex ? 'bg-white' : 'bg-gray-500'}`}
+                  />
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+
+        <div className="md:w-1/2 space-y-7">
+          <div className="">
+            <div className="w-full black-gradient rounded-full h-2 mt-2">
+              <div
+                className="bg-green-500 h-2 rounded-full"
+                style={{
+                  width: `${Math.min(100, (Number(campaign?.stats.upvote) / Number(campaign?.milestone)) * 100)}%`
+                }}
+              />
+              <div className="flex justify-between">
+                <span className='font-bold'>{Number(campaign?.stats.upvote)} / {Number(campaign?.milestone)} <span className="text-emerald-700">NFT</span></span>
+              </div>
+            </div>
+          </div>
+
+          <div className='flex flex-col'>
+            <p className='font-bold'>Supporters</p>
+            <p>{Number(campaign?.stats.upvote ?? 0) + Number(campaign?.stats.devote ?? 0)}</p>
+          </div>
+          <div className='flex flex-col'>
+            <p className='font-bold'>Trust Scores</p>
+            <p>{Number(campaign?.owner.trustPoints)}</p>
+          </div>
+          <div className='flex flex-col'>
+            <p className='font-bold'>Days to go</p>
+            <p>{Math.max(0, Math.floor((Number(campaign?.endTime) / 1_000_000 - Date.now()) / 1000 / 86400))}</p>
+          </div>
+          <button className="black-gradient rounded-full py-3 px-8 ">
+            Fund this business
+          </button>
+
+          <div className="flex gap-4 mt-4">
+            <div className='flex items-center gap-5'>
+              <div className='rounded-full bg-gradient-to-t p-1 from-green-700 to-green-400'>
+                <button className="flex rounded-full p-2 bg-black text-white items-center gap-2 ">
+                  <FaCheck />
+                </button>
+              </div>
+              <p className='font-bold'>Upvote</p>
+            </div>
+            <div className='flex items-center gap-5'>
+              <div className='rounded-full bg-gradient-to-t p-1 from-red-700 to-red-400'>
+                <button className="flex rounded-full p-2 bg-black  items-center gap-2 ">
+                  <ImCross />
+                </button>
+              </div>
+              <p className='font-bold'>Upvote</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <NavCampaign activeTab={activeTab} onTabChange={setActiveTab} />
+
+      {activeTab === 'campaign' && (
+        <div className="flex mt-8">
+          <div className="w-1/4">
+            <SidebarAbout aboutSections={campaign?.about ?? []} />
+          </div>
+          <div className="w-3/4">
+            <About aboutSections={campaign?.about ?? []} />
+          </div>
+        </div>
+      )}
+      {activeTab === 'author' && (
+        <div>{/* Render Author section here */}</div>
+      )}
+      {activeTab === 'reward' && (
+        <div>{/* Render Reward section here */}</div>
+      )}
+      {activeTab === 'reviews' && (
+        <div>{/* Render Reviews here */}</div>
+      )}
+
+    </div>
+  )
+}
+
+export default DetailCampaign
