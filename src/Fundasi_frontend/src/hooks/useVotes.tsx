@@ -9,7 +9,6 @@ const useVotes = () => {
     const [isLoading, setIsLoading] = useState(true)
     const [error, setError] = useState<string | null>(null)
 
-
     const upvote = async (userId: Principal, points: bigint) => {
         setIsLoading(true)
         setError(null)

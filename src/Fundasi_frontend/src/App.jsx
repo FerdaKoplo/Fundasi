@@ -8,6 +8,7 @@ import MicroBusinessList from "./pages/user/campaigns/listcampaign";
 import NFTMinting from "./pages/user/campaigns/nft-minting";
 import UserProfile from "./pages/user/profile/user-profile";
 import UpdateCampaign from "./pages/user/campaigns/update-campaign";
+import MainLanding from "./pages/landing/main-landing";
 
 function AppRoutes() {
   const { isAuthenticated, isLoading } = useAuth()
@@ -16,8 +17,8 @@ function AppRoutes() {
 
   return (
     <Routes>
+      <Route path="/" element={<MainLanding />}/>
       <Route path="/login" element={<AuthPage />} />
-
       <Route
         path="/user-profile"
         element={isAuthenticated ? <UserProfile /> : <Navigate to="/login" replace />}
