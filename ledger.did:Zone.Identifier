@@ -1,0 +1,4 @@
+[ZoneTransfer]
+ZoneId=3
+ReferrerUrl=https://github.com/dfinity/ic/releases?q=%22ledger-suite-icrc%22&expanded=false
+HostUrl=https://objects.githubusercontent.com/github-production-release-asset-2e65be/365701873/5c41e665-c327-4fbf-a970-d04db4f07dec?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=releaseassetproduction%2F20250626%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20250626T050419Z&X-Amz-Expires=1800&X-Amz-Signature=aea0bbdfc1c81b636fc826f153eedbef077a57108eda821006113b151f7a02c2&X-Amz-SignedHeaders=host&response-content-disposition=attachment%3B%20filename%3Dledger.did&response-content-type=application%2Foctet-stream

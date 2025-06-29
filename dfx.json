@@ -5,12 +5,8 @@
       "type": "motoko"
     },
     "Fundasi_frontend": {
-      "dependencies": [
-        "Fundasi_backend"
-      ],
-      "source": [
-        "src/Fundasi_frontend/dist"
-      ],
+      "dependencies": ["Fundasi_backend"],
+      "source": ["src/Fundasi_frontend/dist"],
       "type": "assets",
       "workspace": "Fundasi_frontend"
     }
@@ -18,7 +14,7 @@
   "defaults": {
     "build": {
       "args": "",
-      "packtool": ""
+      "packtool": "mops sources"
     }
   },
   "output_env_file": ".env",
