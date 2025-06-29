@@ -1,13 +1,16 @@
 import React from "react";
 import { FaUser } from "react-icons/fa";
 import { Link } from "react-router-dom";
+import LogoutButton from "../../auth/LogoutButton";
+import { useAuth } from "../../../context/auth-context";
 
 interface NavbarProps {
   search: string;
-  setSearch: (value: string) => void
+  setSearch: (value: string) => void;
 }
 
 const Navbar: React.FC<NavbarProps> = ({ search, setSearch }) => {
+  const { logout, isAuthenticated } = useAuth();
   return (
     <div className="flex items-center bg-black justify-between p-6 sticky top-0">
       <Link to={"/campaigns"}>
@@ -48,8 +51,13 @@ const Navbar: React.FC<NavbarProps> = ({ search, setSearch }) => {
           </div>
         </div>
       </Link>
+      {isAuthenticated && (
+        <div className="ml-4">
+          <LogoutButton onClick={logout} />
+        </div>
+      )}
     </div>
-  )
-}
+  );
+};
 
-export default Navbar
+export default Navbar;

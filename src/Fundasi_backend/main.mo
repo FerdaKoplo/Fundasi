@@ -16,19 +16,48 @@ import NFT "models/NFT";
 import NFTService "services/NFTService";
 import Icrc37Types "models/ICRC37Types";
 import Icrc37Environment "services/ICRC37Environment";
+import Icrc1Types "models/ICRC1Types";
 import ICRC37 "services/ICRC37";
 import Env "env";
+import ICRC2Types "models/ICRC2Types";
+import Debug "mo:base/Debug";
+import Nat64 "mo:base/Nat64";
 import Review "models/Review";
 import ReviewService "services/ReviewService";
 
 actor Main {
-  type PurchaseLog = {
-    user: Principal;
-    nftId: Nat;
-    price: Nat;
-    time: Int;
+  type Config = {
+    tokenCanister : Principal;
+    adminPrincipal : Principal;
   };
   // state
+  stable var config : ?Config = null;
+  public shared(msg) func initConfig(cfg: Config): async () {
+    config := ?cfg;
+  };
+
+  private func getConfig(): Config {
+    switch (config) {
+      case (null) Debug.trap("❌ Config belum diinisialisasi");
+      case (?cfg) cfg;
+    };
+  };
+
+  private func getTokenCanister(): actor {
+    icrc1_balance_of: ({ owner: Principal; subaccount: ?[Nat8] }) -> async Nat;
+    icrc1_transfer: ({
+    to: { owner: Principal; subaccount: ?[Nat8] };
+    amount: Nat;
+    fee: ?Nat;
+    memo: ?[Nat8];
+    from_subaccount: ?[Nat8];
+    created_at_time: ?Nat64;
+     }) -> async Icrc1Types.TransferResult;
+  } {
+    let cfg = getConfig();
+    actor (Principal.toText(cfg.tokenCanister))
+  };
+
   stable var stableUser: [User.User] = [] : [User.User];
   var userMap : HashMap.HashMap<Principal, User.User> = HashMap.HashMap(0, Principal.equal, Principal.hash);
 
@@ -38,7 +67,7 @@ actor Main {
   stable var stableCampaigns : [Campaign.Campaign] = [] : [Campaign.Campaign];
   var campaignMap : HashMap.HashMap<Nat, Campaign.Campaign> = HashMap.HashMap<Nat, Campaign.Campaign>(0, Nat.equal, Hash.hash);
 
-  stable var stableNFTs : [(Nat, NFT.NFT)] = [];
+  stable var stableNFTs: [(Nat, NFT.NFT)] = [];
   var nftMap : HashMap.HashMap<Nat, NFT.NFT> = HashMap.HashMap<Nat, NFT.NFT>(0, Nat.equal, Hash.hash);
   var nextNftId : Nat = 0;
 
@@ -47,12 +76,8 @@ actor Main {
   var icrc37_state: Icrc37Types.CollectionState = ICRC37.initialState();
   private var _icrc37: ?ICRC37.ICRC37 = null;
 
-  var purchaseLogs: [PurchaseLog] = [];
-  stable var stablePurchaseLogs: [PurchaseLog] = [];
-
-  let TokenCanister = actor("uzt4z-lp777-77774-qaabq-cai") : actor {
-    icrc1_balance_of: ({ owner: Principal; subaccount: ?[Nat8] }) -> async Nat;
-  };
+  var purchaseLogs: [NFT.PurchaseLog] = [];
+  stable var stablePurchaseLogs: [NFT.PurchaseLog] = [];
 
   public shared(msg) func initCanisterId(): async () {
     if (canisterId == null) {
@@ -68,7 +93,7 @@ actor Main {
       case (?cid) {
         icrc37_state := ICRC37.init(icrc37_state, #v0_1_0(#id), Icrc37Environment.defaultConfig(), cid);
         let env = get_icrc37_environment(cid);
-        _icrc37 := ?ICRC37.ICRC37(?icrc37_state, cid, env);
+        _icrc37 := ?ICRC37.ICRC37(?icrc37_state, cid, env, getConfig().adminPrincipal);
       };
     };
   };
@@ -83,12 +108,12 @@ actor Main {
         switch (canisterId) {
           case (null) {
             let cid = Principal.fromActor(Main);
-            let instance = ICRC37.ICRC37(?icrc37_state, cid, get_icrc37_environment(cid));
+            let instance = ICRC37.ICRC37(?icrc37_state, cid, get_icrc37_environment(cid), getConfig().adminPrincipal);
             _icrc37 := ?instance;
             instance;
           };
           case (?cid) {
-            let instance = ICRC37.ICRC37(?icrc37_state, cid, get_icrc37_environment(cid));
+            let instance = ICRC37.ICRC37(?icrc37_state, cid, get_icrc37_environment(cid), getConfig().adminPrincipal);
             _icrc37 := ?instance;
             instance;
           };
@@ -111,13 +136,32 @@ actor Main {
   
   system func postupgrade() {
     for (user in stableUser.vals()) {
-      userMap.put(user.id, user);
+      let migratedUser : User.User = {
+        id = user.id;
+        username = user.username;
+        trustPoints = user.trustPoints;
+        campaignCount = user.campaignCount;
+        createdAt = user.createdAt;
+        completedCampaigns = user.completedCampaigns;
+        avatarUrl = user.avatarUrl;
+        hasProfile = false; 
+      };
+      userMap.put(user.id, migratedUser);
     };
     for (campaign in stableCampaigns.vals()) {
       campaignMap.put(campaign.id, campaign);
     };
-    for ((id, nft) in stableNFTs.vals()) {
-      nftMap.put(id, nft);
+    for ((id, oldNFT) in stableNFTs.vals()) {
+      let migratedNFT: NFT.NFT = {
+        id = oldNFT.id;
+        campaignId = oldNFT.campaignId;
+        ownerId = oldNFT.ownerId;
+        level = oldNFT.level;
+        metadata = oldNFT.metadata;
+        price = oldNFT.price;
+        isAvailable = true; 
+      };
+      nftMap.put(id, migratedNFT);
     };
     purchaseLogs := stablePurchaseLogs;
     stableUser := [];
@@ -125,9 +169,10 @@ actor Main {
     stableNFTs := [];
     stablePurchaseLogs := [];
   };
+
   
     // NFT
-    public shared(msg) func mintRewardNFT(
+  public shared(msg) func mintRewardNFT(
       campaignId: Nat,
       level: Text,
       metadata: NFT.Metadata,
@@ -147,40 +192,178 @@ actor Main {
       return nft;
     };
 
-   public shared(msg) func purchaseNFT(tokenId: Nat): async Icrc37Types.TransferResult {
-    let caller = msg.caller;
 
-    switch (NFTService.getNFTById(nftMap, tokenId)) {
-      case null return #Err("NFT not found");
+   public shared(msg) func purchaseNFT(campaignId: Nat, level: Text): async Icrc37Types.TransferResult {
+    let caller = msg.caller;
+    let canisterPrincipal = Principal.fromActor(Main);
+    let maybeNft = NFTService.getAvailableNFT(nftMap, campaignId, level);
+
+    switch (maybeNft) {
+      case null return #Err("No available NFT for this reward");
       case (?nft) {
-        if (nft.ownerId != Principal.fromActor(Main)) {
+        if (nft.ownerId != canisterPrincipal or not nft.isAvailable) {
           return #Err("NFT not available for purchase");
         };
 
-        // Cek saldo ICRC-1 user
-        let account = { owner = caller; subaccount = null };
-        let balance = await TokenCanister.icrc1_balance_of(account);
+        // ✅ Validasi harga minimal untuk hindari BadBurn
+        if (nft.price < 1000) {
+          return #Err("NFT price must be at least 1000 to meet min burn requirement.");
+        };
+
+        // 1. Cek saldo user
+        let tokenCanister = getTokenCanister();
+        let balance = await tokenCanister.icrc1_balance_of({
+          owner = caller;
+          subaccount = null;
+        });
 
         if (balance < nft.price) {
           return #Err("Insufficient token balance");
         };
 
-        // Lanjut transfer NFT
-        let transferArg: Icrc37Types.TransferArg = {
-          from = { owner = nft.ownerId; subaccount = null };
-          to = { owner = caller; subaccount = null };
-          token_ids = [nft.id];
+        Debug.print("💰 Balance before transfer: " # Nat.toText(balance));
+        Debug.print("🎯 Target canister: " # Principal.toText(canisterPrincipal));
+        Debug.print("🎯 Transfer amount: " # Nat.toText(nft.price));
+        // 2. Transfer token ke canister
+        let transferTokenResult = await tokenCanister.icrc1_transfer({
+          to = { owner = canisterPrincipal; subaccount = null };
+          amount = nft.price;
+          fee = null;
           memo = null;
+          from_subaccount = null;
           created_at_time = null;
-        };
+        });
 
-        return icrc37().transfer(caller, transferArg);
+        switch (transferTokenResult) {
+          case (#Err(err)) {
+             let errMsg = debug_show(err);
+              Debug.print("❌ Transfer failed: " # errMsg);
+                return #Err("Token transfer failed: " # errMsg);
+          };
+          case (#Ok(_)) {
+            Debug.print("✅ Token transfer success!");
+            // 3. Transfer NFT ke user
+            let transferArg: Icrc37Types.TransferArg = {
+              from = { owner = canisterPrincipal; subaccount = null };
+              to = { owner = caller; subaccount = null };
+              token_ids = [nft.id];
+              memo = null;
+              created_at_time = null;
+            };
+
+            let result = icrc37().transfer(canisterPrincipal, transferArg);
+
+            switch (result) {
+              case (#Ok(_)) {
+                // 1. Tandai NFT tidak tersedia
+                let updatedNft = { nft with isAvailable = false; ownerId = caller };
+                nftMap.put(nft.id, updatedNft);
+
+                // 2. Log pembelian
+                purchaseLogs := Array.append(purchaseLogs, [{
+                  user = caller;
+                  nftId = nft.id;
+                  price = nft.price;
+                  time = Time.now();
+                }]);
+
+                // 3. Update campaign (milestone & reward quantity)
+                switch (campaignMap.get(nft.campaignId)) {
+                  case (?campaign) {
+                    var milestoneInc = 0;
+                    let updatedRewards = Array.map<Campaign.Rewards, Campaign.Rewards>(
+                      campaign.rewards,
+                      func(r) {
+                        Debug.print("🎯 Matching reward: r.level = " # r.level # ", nft.level = " # nft.level);
+                        Debug.print("🎯 Matching reward: r.nftPrice = " # Nat.toText(r.nftPrice) # ", nft.price = " # Nat.toText(nft.price));
+
+                        if (r.level == nft.level and r.nftPrice == nft.price and r.quantity > 0) {
+                          milestoneInc += 1;
+                          { r with quantity = r.quantity - 1 };
+                        } else r;
+                      }
+                    );
+
+                    let updatedCampaign: Campaign.Campaign = {
+                      campaign with
+                        rewards = updatedRewards;
+                        milestone = campaign.milestone + milestoneInc;
+                    };
+                    campaignMap.put(campaign.id, updatedCampaign);
+                  };
+                  case null {};
+                };
+
+                return #Ok([nft.id]);
+              };
+              case (#Err(_)) {
+                return result;
+              };
+            };
+          };
+        };
+      };
+    };
+  };
+
+
+    public shared(msg) func adminPurchaseNFT(tokenId: Nat, buyer: Principal): async Icrc37Types.TransferResult {
+      let adminPrincipal = getConfig().adminPrincipal;
+
+      if (msg.caller != adminPrincipal) {
+        return #Err("Unauthorized bukan admin principal");
+      };
+      Debug.print("✅ adminPurchaseNFT called by: " # Principal.toText(msg.caller));
+      Debug.print("✅ Expected admin: " # Principal.toText(adminPrincipal));
+
+      switch (NFTService.getNFTById(nftMap, tokenId)) {
+        case null return #Err("NFT not found");
+        case (?nft) {
+          if (nft.ownerId != Principal.fromActor(Main) or not nft.isAvailable) {
+            return #Err("NFT not available for purchase");
+          };
+
+          let transferArg: Icrc37Types.TransferArg = {
+            from = { owner = Principal.fromActor(Main); subaccount = null };
+            to = { owner = buyer; subaccount = null };
+            token_ids = [nft.id];
+            memo = null;
+            created_at_time = null;
+          };
+
+          let result = icrc37().transfer(msg.caller, transferArg); 
+
+          switch (result) {
+            case (#Ok(_)) {
+              let updatedNft = { nft with isAvailable = false; ownerId = buyer };
+              nftMap.put(nft.id, updatedNft);
+              purchaseLogs := Array.append(purchaseLogs, [{
+                user = buyer;
+                nftId = nft.id;
+                price = nft.price;
+                time = Time.now();
+              }]);
+            };
+            case _ {};
+          };
+
+          return result;
+        };
+      };
+    };
+
+  public query func getAvailableNFTs(): async [NFT.NFT] {
+    Array.filter<NFT.NFT>(
+      NFTService.getAllNFTs(nftMap),
+      func(nft: NFT.NFT) : Bool {
+        nft.ownerId == Principal.fromActor(Main) and nft.isAvailable
       }
-    }
+    )
   };
 
   public shared(msg) func claimNFT(tokenId: Nat): async Icrc37Types.TransferResult {
     let caller = msg.caller;
+    let tokenCanister = getTokenCanister();
 
     switch (NFTService.getNFTById(nftMap, tokenId)) {
       case null return #Err("NFT not found");
@@ -193,7 +376,7 @@ actor Main {
           owner = Principal.fromActor(Main);
           subaccount = null;
         };
-        let currentBalance = await TokenCanister.icrc1_balance_of(canisterAccount);
+        let currentBalance = await tokenCanister.icrc1_balance_of(canisterAccount);
 
         if (currentBalance < nft.price) {
           return #Err("Payment not received yet");
@@ -217,6 +400,8 @@ actor Main {
                 price = nft.price;
                 time = Time.now();
               }]);
+              let updatedNft = { nft with isAvailable = false; ownerId = caller };
+              nftMap.put(nft.id, updatedNft);
             };
             case _ {};
           };
@@ -230,47 +415,90 @@ actor Main {
     return icrc37().transfer(msg.caller, arg);
   };
 
-  public query func getPurchaseLogs() : async [PurchaseLog] {
+  public query func getPurchaseLogs() : async [NFT.PurchaseLog] {
     purchaseLogs;
   };
 
-  
-  public query func getUserPurchaseLogs(user: Principal) : async [PurchaseLog] {
-    Array.filter<PurchaseLog>(purchaseLogs, func(log: PurchaseLog) { log.user == user });
+  public shared(msg) func claimInitialToken(): async Result.Result<Text, Text> {
+    let caller = msg.caller;
+
+    let amount: Nat = 100_000_000;
+
+    switch (userMap.get(caller)) {
+      case null return #err("User belum terdaftar");
+      case (?user) {
+        if (user.trustPoints > 0) {
+          return #err("Token sudah pernah diklaim");
+        };
+
+        let token = getTokenCanister();
+        let toAccount = {
+          owner = caller;
+          subaccount = null;
+        };
+
+        let transferResult = await token.icrc1_transfer({
+           to = { owner = caller; subaccount = null };
+            amount = amount;
+            fee = null;
+            memo = null;
+            from_subaccount = null;
+            created_at_time = null;
+        });
+
+        switch (transferResult) {
+          case (#Ok(_)) {
+            let updated = { user with trustPoints = amount };
+            userMap.put(caller, updated);
+            return #ok("Token berhasil diklaim");
+          };
+          case (#Err(err)) {
+            let msg = debug_show(err);
+            Debug.print("❌ Transfer gagal saat klaim token: " # msg);
+            return #err("Transfer token gagal: " # msg);
+          };
+        };
+      };
+    };
   };
 
-  // // ICRC-7/ICRC-37 Queries
-  // public query func icrc37_supported_standards(): async [(Text, Text)] {
-  //   icrc37().supported_standards();
-  // };
+  
+  public query func getUserPurchaseLogs(user: Principal) : async [NFT.PurchaseLog] {
+    Array.filter<NFT.PurchaseLog>(purchaseLogs, func(log: NFT.PurchaseLog) { log.user == user });
+  };
 
-  // public query func icrc37_name(): async ?Text {
-  //   icrc37().name();
-  // };
+  // ICRC-7/ICRC-37 Queries
+  public query func icrc37_supported_standards(): async [(Text, Text)] {
+    icrc37().supported_standards();
+  };
 
-  // public query func icrc37_symbol(): async ?Text {
-  //   icrc37().symbol();
-  // };
+  public query func icrc37_name(): async ?Text {
+    icrc37().name();
+  };
 
-  // public query func icrc37_description(): async ?Text {
-  //   icrc37().description();
-  // };
+  public query func icrc37_symbol(): async ?Text {
+    icrc37().symbol();
+  };
 
-  // public query func icrc37_logo(): async ?Text {
-  //   icrc37().logo();
-  // };
+  public query func icrc37_description(): async ?Text {
+    icrc37().description();
+  };
 
-  // public query func icrc37_supply_cap(): async ?Nat {
-  //   icrc37().supply_cap();
-  // };
+  public query func icrc37_logo(): async ?Text {
+    icrc37().logo();
+  };
 
-  // public query func icrc37_total_supply(): async Nat {
-  //   icrc37().total_supply();
-  // };
+  public query func icrc37_supply_cap(): async ?Nat {
+    icrc37().supply_cap();
+  };
 
-  // public query func icrc7_tokens(): async [Nat] {
-  //   icrc37().tokens();
-  // };
+  public query func icrc37_total_supply(): async Nat {
+    icrc37().total_supply();
+  };
+
+  public query func icrc7_tokens(): async [Nat] {
+    icrc37().tokens();
+  };
 
   public query func icrc7_owner_of(ids: [Nat]): async [?Principal] {
     return Array.map<Nat, ?Principal>(ids, func(id) {
@@ -284,9 +512,9 @@ actor Main {
     });
   };
 
-  // public query func icrc7_tokens_of(owner: Principal): async [Nat] {
-  //   icrc37().tokens_of(owner);
-  // };
+  public query func icrc7_tokens_of(owner: Principal): async [Nat] {
+    icrc37().tokens_of(owner);
+  };
 
 
   // User
@@ -304,7 +532,36 @@ actor Main {
       };
     };
   };
-  
+
+  public shared(msg) func updateUserProfile(username: Text, avatarUrl: ?Text) : async Result.Result<User.User, Text> {
+    let caller = msg.caller;
+    switch (userMap.get(caller)) {
+      case null return #err("User not found");
+      case (?user) {
+        let updated: User.User = {
+          id = user.id;
+          username = username;
+          trustPoints = user.trustPoints;
+          campaignCount = user.campaignCount;
+          completedCampaigns = user.completedCampaigns;
+          createdAt = user.createdAt;
+          avatarUrl = avatarUrl;
+          hasProfile = true; 
+        };
+        userMap.put(caller, updated);
+
+        stableUser := Array.filter<User.User>(stableUser, func(u) { u.id != caller });
+        stableUser := Array.append(stableUser, [updated]);
+
+        return #ok(updated);
+      };
+    };
+  };
+
+  public query func getCanisterPrincipal(): async Principal {
+    Principal.fromActor(Main)
+  };
+
   public shared(msg) func getUserProfile() : async ?User.User {
     let caller = msg.caller;
     return UserService.getCurrentUser(stableUser, caller);
@@ -342,8 +599,11 @@ actor Main {
     return CampaignService.getCampaignByOwner(campaignMap, ownerId)
   };
   
-  public query func getUserByPrincipal(p : Principal) : async ?User.User {
-    return UserService.getUserByPrincipal(userMap, p);
+  public shared query func getUserByPrincipal(p : Principal) : async Result.Result<User.User, Text> {
+    switch (userMap.get(p)) {
+      case (?user) return #ok(user);
+      case null return #err("User not found");
+    }
   };
 
   // User Trust Points

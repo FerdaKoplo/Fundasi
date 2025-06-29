@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useCampaign } from "../../../hooks/useCampaign";
 import { Principal } from "@dfinity/principal";
-import { useAuth } from "../../../hooks/useAuth";
+import { useAuth } from "../../../context/auth-context";
 import ReactMarkdown from "react-markdown";
 import { useNavigate } from "react-router-dom";
 import Navbar from "../../../components/nav/campaign/nav-menu";
@@ -82,6 +82,7 @@ const AddCampaign = () => {
       setMedia((prev) => [...prev, { imageUrl: results }]);
     });
   };
+
   const handleAboutImagesChange = (index: number, files: FileList | null) => {
     if (!files) return;
 
@@ -136,6 +137,7 @@ const AddCampaign = () => {
         completedCampaigns: user?.completedCampaigns ?? BigInt(0),
         createdAt: user?.createdAt ?? BigInt(Date.now()),
         avatarUrl: user?.avatarUrl ?? [],
+        hasProfile: user?.hasProfile ?? false,
       },
       stats: {
         upvote: BigInt(0),

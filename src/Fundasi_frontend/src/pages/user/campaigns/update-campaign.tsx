@@ -1,25 +1,22 @@
 import React, { useState, useEffect } from "react";
 import { useCampaign } from "../../../hooks/useCampaign";
 import { Principal } from "@dfinity/principal";
-import { useAuth } from "../../../hooks/useAuth";
+import { useAuth } from "../../../context/auth-context";
 import ReactMarkdown from "react-markdown";
 import { useNavigate, useParams } from "react-router-dom";
 
 const UpdateCampaign = () => {
   const { campaignId } = useParams();
   const { user } = useAuth();
-  const {
-    campaign,
-    fetchDetailCampaing,
-    fetchUpdateCampaign,
-    loading,
-    error,
-  } = useCampaign();
+  const { campaign, fetchDetailCampaing, fetchUpdateCampaign, loading, error } =
+    useCampaign();
 
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [milestone, setMilestone] = useState("");
-  const [media, setMedia] = useState<{ imageUrl: string[] }[]>([{ imageUrl: [] }]);
+  const [media, setMedia] = useState<{ imageUrl: string[] }[]>([
+    { imageUrl: [] },
+  ]);
   const [aboutSections, setAboutSections] = useState([
     { titleAbout: "", content: "", section: "", imageUrl: [] as string[] },
   ]);
@@ -51,7 +48,7 @@ const UpdateCampaign = () => {
           titleAbout: a.titleAbout?.[0] || "",
           content: a.content?.[0] || "",
           section: a.section?.[0] || "",
-          imageUrl: a.imageUrl || []
+          imageUrl: a.imageUrl || [],
         }))
       );
       setRewards(
@@ -61,7 +58,7 @@ const UpdateCampaign = () => {
           description: r.description,
           estimatedDelivery: r.estimatedDelivery?.[0] || "",
           nftPrice: r.nftPrice.toString(),
-          imageUrl: [r.imageUrl]
+          imageUrl: [r.imageUrl],
         }))
       );
     }
@@ -152,7 +149,7 @@ const UpdateCampaign = () => {
         description: "",
         estimatedDelivery: "",
         nftPrice: "",
-        imageUrl: []
+        imageUrl: [],
       },
     ]);
   };
@@ -172,7 +169,8 @@ const UpdateCampaign = () => {
         campaignCount: user?.campaignCount ?? BigInt(0),
         completedCampaigns: user?.completedCampaigns ?? BigInt(0),
         createdAt: user?.createdAt ?? BigInt(Date.now()),
-        avatarUrl: user?.avatarUrl ?? []
+        avatarUrl: user?.avatarUrl ?? [],
+        hasProfile: user?.hasProfile ?? false,
       },
       stats: campaign?.stats ?? {
         upvote: BigInt(0),
@@ -203,7 +201,8 @@ const UpdateCampaign = () => {
       }),
       review: campaign?.review ?? [],
       endTime:
-        campaign?.endTime ?? BigInt(Math.floor(Date.now() / 1000 + 60 * 24 * 60 * 60)),
+        campaign?.endTime ??
+        BigInt(Math.floor(Date.now() / 1000 + 60 * 24 * 60 * 60)),
     };
     const result = await fetchUpdateCampaign(BigInt(campaignId), campaignData);
     if ("ok" in result) {
@@ -211,8 +210,8 @@ const UpdateCampaign = () => {
     } else {
       console.error("Update failed:", result.err);
     }
-  }
-  
+  };
+
   return (
     <div className="bg-black">
       <div className="px-32 flex min-h-screen flex-col gap-10 justify-center items-center">
@@ -220,13 +219,17 @@ const UpdateCampaign = () => {
           onSubmit={handleUpdateCampaign}
           className="max-w-4xl mx-auto rounded-xl p-8 space-y-8"
         >
-          <h1 className="text-3xl font-bold text-white text-center">Update Campaign</h1>
+          <h1 className="text-3xl font-bold text-white text-center">
+            Update Campaign
+          </h1>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             {/* Left: Campaign Details */}
             <div className="bg-gradient-to-l p-2 rounded-lg">
               <div className="space-y-4 bg-black p-4 rounded-lg">
-                <h3 className="text-green-300 font-bold text-xl">Campaign Details</h3>
+                <h3 className="text-green-300 font-bold text-xl">
+                  Campaign Details
+                </h3>
                 <input
                   className="black-gradient text-gray-100 rounded-lg p-3 w-full"
                   value={title}
@@ -271,34 +274,44 @@ const UpdateCampaign = () => {
 
             <div className="bg-gradient-to-r from-black to-green-950 p-2 rounded-lg space-y-6">
               <div className="bg-black p-4 rounded-lg">
-                <h3 className="text-green-300 font-bold text-xl">About Sections (Markdown Supported)</h3>
+                <h3 className="text-green-300 font-bold text-xl">
+                  About Sections (Markdown Supported)
+                </h3>
                 {aboutSections.map((a, index) => (
                   <div key={index} className="space-y-2 mt-3">
                     <input
                       className="black-gradient text-gray-100 rounded-lg p-3 w-full"
                       value={a.titleAbout}
                       placeholder="Title"
-                      onChange={(e) => handleAboutChange(index, "titleAbout", e.target.value)}
+                      onChange={(e) =>
+                        handleAboutChange(index, "titleAbout", e.target.value)
+                      }
                     />
                     <textarea
                       className="black-gradient text-gray-100 rounded-lg p-3 w-full"
                       value={a.content}
                       placeholder="Content (Markdown Supported)"
-                      onChange={(e) => handleAboutChange(index, "content", e.target.value)}
+                      onChange={(e) =>
+                        handleAboutChange(index, "content", e.target.value)
+                      }
                       rows={5}
                     />
                     <input
                       className="black-gradient text-gray-100 rounded-lg p-3 w-full"
                       value={a.section}
                       placeholder="Section"
-                      onChange={(e) => handleAboutChange(index, "section", e.target.value)}
+                      onChange={(e) =>
+                        handleAboutChange(index, "section", e.target.value)
+                      }
                     />
                     <input
                       className="black-gradient text-gray-100 rounded-lg p-3 w-full"
                       accept="image/*"
                       multiple
                       type="file"
-                      onChange={(e) => handleAboutImagesChange(index, e.target.files)}
+                      onChange={(e) =>
+                        handleAboutImagesChange(index, e.target.files)
+                      }
                     />
                     <div className="flex flex-wrap gap-2 mt-2">
                       {a.imageUrl.map((url, i) => (
@@ -312,7 +325,9 @@ const UpdateCampaign = () => {
                     </div>
                     {a.content && (
                       <div className="bg-gray-800 p-3 rounded mt-3">
-                        <h4 className="text-gray-300">Live Markdown Preview:</h4>
+                        <h4 className="text-gray-300">
+                          Live Markdown Preview:
+                        </h4>
                         <div className="prose prose-invert text-gray-100 mt-2">
                           <ReactMarkdown>{a.content}</ReactMarkdown>
                         </div>
@@ -337,25 +352,33 @@ const UpdateCampaign = () => {
                       className="black-gradient text-gray-100 rounded-lg p-3 w-full"
                       placeholder="Level"
                       value={r.level}
-                      onChange={(e) => handleRewardChange(index, "level", e.target.value)}
+                      onChange={(e) =>
+                        handleRewardChange(index, "level", e.target.value)
+                      }
                     />
                     <input
                       className="black-gradient text-gray-100 rounded-lg p-3 w-full"
                       placeholder="NFT Price (in ICP)"
                       value={r.nftPrice}
-                      onChange={(e) => handleRewardChange(index, "nftPrice", e.target.value)}
+                      onChange={(e) =>
+                        handleRewardChange(index, "nftPrice", e.target.value)
+                      }
                     />
                     <input
                       className="black-gradient text-gray-100 rounded-lg p-3 w-full"
                       placeholder="Quantity"
                       value={r.quantity}
-                      onChange={(e) => handleRewardChange(index, "quantity", e.target.value)}
+                      onChange={(e) =>
+                        handleRewardChange(index, "quantity", e.target.value)
+                      }
                     />
                     <input
                       className="black-gradient text-gray-100 rounded-lg p-3 w-full"
                       accept="image/*"
                       type="file"
-                      onChange={(e) => handleRewardImageChange(index, e.target.files)}
+                      onChange={(e) =>
+                        handleRewardImageChange(index, e.target.files)
+                      }
                     />
                     <div className="flex gap-2 mt-2">
                       {r.imageUrl.map((url, i) => (
@@ -371,13 +394,21 @@ const UpdateCampaign = () => {
                       className="black-gradient text-gray-100 rounded-lg p-3 w-full"
                       placeholder="Description"
                       value={r.description}
-                      onChange={(e) => handleRewardChange(index, "description", e.target.value)}
+                      onChange={(e) =>
+                        handleRewardChange(index, "description", e.target.value)
+                      }
                     />
                     <input
                       className="black-gradient text-gray-100 rounded-lg p-3 w-full"
                       placeholder="Estimated Delivery"
                       value={r.estimatedDelivery}
-                      onChange={(e) => handleRewardChange(index, "estimatedDelivery", e.target.value)}
+                      onChange={(e) =>
+                        handleRewardChange(
+                          index,
+                          "estimatedDelivery",
+                          e.target.value
+                        )
+                      }
                     />
                   </div>
                 ))}
@@ -401,7 +432,7 @@ const UpdateCampaign = () => {
               {loading ? "Updating..." : "Update Campaign"}
             </button>
           </div>
-          
+
           {error && (
             <div className="bg-red-600 text-white p-3 rounded mt-4 text-center">
               {error}
@@ -410,7 +441,7 @@ const UpdateCampaign = () => {
         </form>
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default UpdateCampaign
+export default UpdateCampaign;

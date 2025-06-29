@@ -13,5 +13,6 @@
             createdAt : Int;
             completedCampaigns : Nat;
             avatarUrl : ?Text;
+            hasProfile : Bool;
         };
     };

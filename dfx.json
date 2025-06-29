@@ -9,6 +9,11 @@
       "source": ["src/Fundasi_frontend/dist"],
       "type": "assets",
       "workspace": "Fundasi_frontend"
+    },
+    "icrc1_ledger": {
+      "type": "custom",
+      "candid": "ledger.did",
+      "wasm": "ic-icrc1-ledger.wasm.gz"
     }
   },
   "defaults": {

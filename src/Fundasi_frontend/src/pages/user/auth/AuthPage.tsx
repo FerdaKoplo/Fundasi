@@ -1,5 +1,6 @@
 import React from "react";
 import AuthCard from "../../../components/auth/AuthCard";
+import LogoutButton from "../../../components/auth/LogoutButton";
 
 const AuthPage = () => {
   return (

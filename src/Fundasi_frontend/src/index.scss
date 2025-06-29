@@ -10,6 +10,10 @@
     @apply bg-gradient-to-b from-[#2D2D2D] via-[#1A1A1A] to-[#111];
   }
 
+
+  .red-gradient {
+    @apply bg-gradient-to-l from-[#000000] via-[#690202] to-[#af0000];
+    
   .diagram-dark-green {
   @apply bg-gradient-to-r from-[#2a5d4b] to-[#7a9b5f] bg-clip-text text-transparent;
   }
@@ -30,5 +34,6 @@
   }
   .light-black-gradient-text {
     @apply bg-gradient-to-b from-[#5c5c5c] via-[#868686] to-[#111] bg-clip-text text-transparent;
+
   }
 }
