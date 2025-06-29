@@ -10,12 +10,16 @@ import AuthPage from "./pages/user/auth/AuthPage";
 import AddCampaign from "./pages/user/campaigns/add-campaign";
 import DetailCampaign from "./pages/user/campaigns/detail-campaign";
 import MicroBusinessList from "./pages/user/campaigns/listcampaign";
+import RewardForm from "./pages/landing/rewardForm";
+import TrustPointSystem from "./pages/landing/trustPoint";
+import FutterPage from "./pages/landing/futterPage";
 import NFTMinting from "./pages/user/campaigns/nft-minting";
 import UserProfile from "./pages/user/profile/user-profile";
 import UpdateCampaign from "./pages/user/campaigns/update-campaign";
 import EditProfile from "./pages/user/profile/edit-profile";
 import { AuthProvider } from "./context/auth-context";
 import Loading from "./components/modal/loading";
+import MainLanding from "./pages/landing/main-landing";
 
 function AppRoutes() {
   const { isAuthenticated, isLoading, user } = useAuth();
@@ -24,6 +28,7 @@ function AppRoutes() {
 
   return (
     <Routes>
+
       <Route
         path="/login"
         element={
@@ -37,7 +42,7 @@ function AppRoutes() {
           )
         }
       />
-
+      <Route path="/" element={<MainLanding />}/>
       <Route
         path="/user-profile"
         element={
