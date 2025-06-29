@@ -12,7 +12,6 @@ export const useAuth = () => {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  
 
   const initializeAuthClient = useCallback(async () => {
     const client = await AuthClient.create({

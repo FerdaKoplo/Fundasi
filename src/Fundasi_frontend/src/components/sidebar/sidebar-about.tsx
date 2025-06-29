@@ -1,34 +1,50 @@
-import React from 'react'
+import React from "react";
+import { FaChevronRight } from "react-icons/fa";
+
+interface AboutCampaign {
+  titleAbout: [string] | [];
+  content: [string] | [];
+  section: [string] | [];
+  imageUrl: string[];
+}
 
 interface SideBarAboutProps {
-  aboutSections: {
-    titleAbout: string[]
-    content: string[]
-    section: string[]
-    imageUrl: string[]
-  }[]
+  aboutSections: AboutCampaign[]
+  selectedIndex: number;
+  onSelect: (index: number) => void
 }
 
-const SideBarAbout: React.FC<SideBarAboutProps> = ({ aboutSections }) => {
+const SideBarAbout: React.FC<SideBarAboutProps> = ({  aboutSections,
+  selectedIndex,
+  onSelect, }) => {
   return (
-    <nav>
+    <nav className="space-y-3">
       {aboutSections?.map((aboutItem, index) => {
-        const title = aboutItem.titleAbout?.[0] ?? ''
-        const section = aboutItem.section?.[0] ?? ''
-        if (!title || !section) return null
+        const title = aboutItem.titleAbout?.[0] ?? ""; 
+        const section = aboutItem.section?.[0] ?? ""; 
+        if (!title || !section) return null;
 
         return (
-          <a
+          <div
             key={index}
-            href={`#${section}`}
-            className="text-white block py-1 hover:underline"
+            onClick={() => onSelect(index)}
+            className={`p-3 cursor-pointer rounded-lg transition ${
+              selectedIndex === index
+                ? "bg-gray-900 border border-green-500"
+                : "hover:bg-gray-800"
+            }`}
           >
-            {title}
-          </a>
-        )
+            <div className="flex justify-between items-center">
+              <span className="text-white font-medium">{title}</span>
+              {selectedIndex === index && (
+                <FaChevronRight className="text-green-400" />
+              )}
+            </div>
+          </div>
+        );
       })}
     </nav>
-  )
-}
+  );
+};
 
-export default SideBarAbout
+export default SideBarAbout;

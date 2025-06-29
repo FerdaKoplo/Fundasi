@@ -20,12 +20,12 @@ const About: React.FC<AboutProps> = ({ aboutSections }) => {
         return (
           <div key={index} id={section}>
             <h2 className="text-2xl font-bold">{title}</h2>
-            <p className="mt-3">{content}</p>
             <div className="flex space-x-3 mt-3">
               {images.map((imgUrl, i) => (
-                <img key={i} src={imgUrl} alt={title} className="w-48 rounded" />
-              ))}
+                  <img key={i} src={imgUrl} alt={title} className="w-48 rounded" />
+                ))}
             </div>
+                <p className="mt-3">{content}</p>
           </div>
         )
       })}
