@@ -1,59 +1,119 @@
-# `Fundasi`
 
-Welcome to your new `Fundasi` project and to the Internet Computer development community. By default, creating a new project adds this README and some template files to your project directory. You can edit these template files to customize your project and to include your own code to speed up the development cycle.
+# Fundasi - Aplikasi Crowd Funding Berbasis Web 3
 
-To get started, you might want to explore the project directory structure and the default configuration file. Working with this project in your development environment will not affect any production deployment or identity tokens.
+**Fundasi** adalah aplikasi crowd funding berbasis Web 3 yang bertujuan untuk membantu UMKM (Usaha Mikro, Kecil, dan Menengah) melalui pembelian NFT mereka. Dalam aplikasi ini, pengguna dapat membeli NFT yang diterbitkan oleh UMKM dan mendapatkan reward sebagai bentuk apresiasi. Aplikasi ini memanfaatkan teknologi blockchain dan konsep NFT untuk memberikan dukungan kepada UMKM dengan cara yang inovatif dan transparan.
 
-To learn more before you start working with `Fundasi`, see the following documentation available online:
+## Prasyarat
 
-- [Quick Start](https://internetcomputer.org/docs/current/developer-docs/setup/deploy-locally)
-- [SDK Developer Tools](https://internetcomputer.org/docs/current/developer-docs/setup/install)
-- [Motoko Programming Language Guide](https://internetcomputer.org/docs/current/motoko/main/motoko)
-- [Motoko Language Quick Reference](https://internetcomputer.org/docs/current/motoko/main/language-manual)
+Sebelum memulai, pastikan Anda telah menginstal hal-hal berikut:
+- [Node.js](https://nodejs.org/)
+- [DFX](https://internetcomputer.org/docs/current/developer-docs/setup/install)
+- [Mop](https://mop.readthedocs.io/)
 
-If you want to start working on your project right away, you might want to try the following commands:
+## Langkah-langkah
+
+### 1. Menyiapkan Proyek
+
+1. Clone repositori ini dan buka folder root proyek (`Fundasi/`).
+
+   ```bash
+   cd Fundasi/
+   ```
+
+2. Install dependensi proyek dengan menjalankan perintah:
+
+   ```bash
+   npm install
+   ```
+
+3. Install Mop secara global:
+
+   ```bash
+   npm install -g mop
+   ```
+
+4. Tambahkan paket `icrc37-mo` menggunakan Mop:
+
+   ```bash
+   mop add icrc37-mo
+   ```
+
+5. Download file yang dibutuhkan `ledger.did` dan `ic-icrc1-ledger.wasm.gz` dari tautan berikut:
+   [Download Ledger Files](https://github.com/dfinity/ic/releases?q=%22ledger-suite-icrc%22&expanded=false)
+
+6. Letakkan file-file tersebut di direktori yang sesuai dalam proyek Anda.
+
+### 2. Setup ICRC1 Ledger
+
+1. Arahkan ke direktori `src/Fundasi_frontend`:
+
+   ```bash
+   cd src/Fundasi_frontend
+   ```
+
+2. Install dependensi frontend:
+
+   ```bash
+   npm install
+   ```
+
+### 3. Deploy ke Playground (Opsional)
+
+Jika Anda ingin melakukan deploy ke lingkungan `playground`, jalankan perintah berikut:
 
 ```bash
-cd Fundasi/
-dfx help
-dfx canister --help
+dfx deploy --playground
 ```
 
-## Running the project locally
+### 4. Konfigurasi ICRC1 Ledger
 
-If you want to test your project locally, you can use the following commands:
+Pada konfigurasi `icrc1_ledger`, atur parameter berikut:
 
-```bash
-# Starts the replica, running in the background
-dfx start --background
+- **owner**: Principal canister backend/admin
+- **token_fee**: `1000`
+- **controller**: Principal canister backend/admin
+- **initial_fee**: Pilih bebas jika diperlukan
+- **num_to_block_archive**: `1000`
+- **threshold**: `2000`
 
-# Deploys your canisters to the replica and generates your candid interface
-dfx deploy
-```
+### 5. Konfigurasi Candid UI Backend
 
-Once the job completes, your application will be available at `http://localhost:4943?canisterId={asset_canister_id}`.
+#### 5.1. Setup `initConfig`
 
-If you have made changes to your backend canister, you can generate a new candid interface with
+Pada backend `candid UI`, atur konfigurasi berikut:
 
-```bash
-npm run generate
-```
+- **adminPrincipal**: Principal sesuai dengan owner konfigurasi `icrc1_ledger`
+- **tokenCanister**: Canister ID dari `icrc1_ledger`
 
-at any time. This is recommended before starting the frontend development server, and will be run automatically any time you run `dfx deploy`.
+#### 5.2. Inisialisasi Canisters
 
-If you are making frontend changes, you can start a development server with
+- Panggil `initCanister`.
+- Panggil `initIcrc37`.
 
-```bash
-npm start
-```
+### 6. Pengembangan Frontend
 
-Which will start a server at `http://localhost:8080`, proxying API requests to the replica at port 4943.
+1. Setelah backend dan canister dikonfigurasi, lanjutkan dengan bagian frontend.
 
-### Note on frontend environment variables
+2. Mulai pengembangan frontend dengan menjalankan:
 
-If you are hosting frontend code somewhere without using DFX, you may need to make one of the following adjustments to ensure your project does not fetch the root key in production:
+   ```bash
+   npm start
+   ```
 
-- set`DFX_NETWORK` to `ic` if you are using Webpack
-- use your own preferred method to replace `process.env.DFX_NETWORK` in the autogenerated declarations
-  - Setting `canisters -> {asset_canister_id} -> declarations -> env_override to a string` in `dfx.json` will replace `process.env.DFX_NETWORK` with the string in the autogenerated declarations
-- Write your own `createActor` constructor
+   Ini akan memulai server pengembangan frontend di `http://localhost:8080`, yang akan mem-proxy permintaan API ke backend yang berjalan di `http://localhost:4943`.
+
+## Catatan Tambahan
+
+- Jika Anda melakukan perubahan pada backend dan perlu menghasilkan ulang antarmuka candid, jalankan perintah berikut:
+
+  ```bash
+  npm run generate
+  ```
+
+- Untuk frontend, pastikan Anda mengatur variabel lingkungan yang benar untuk target deploy. Misalnya, jika Anda menggunakan Webpack, Anda mungkin perlu mengatur `DFX_NETWORK` ke `ic`.
+
+### Tautan Berguna
+
+- [Panduan Quick Start Internet Computer](https://internetcomputer.org/docs/current/developer-docs/setup/deploy-locally)
+- [Panduan Bahasa Pemrograman Motoko](https://internetcomputer.org/docs/current/motoko/main/motoko)
+- [Dokumentasi ICRC37](https://github.com/dfinity/ic/releases?q=%22ledger-suite-icrc%22&expanded=false)
