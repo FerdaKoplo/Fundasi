@@ -61,6 +61,9 @@ const UserProfile = () => {
             &nbsp;&bull;&nbsp; Joined {user?.createdAt?.toString() ?? "-"}{" "}
             &nbsp;&bull;&nbsp; {user?.trustPoints?.toString() ?? "0"}
           </p>
+          <p className="text-xs text-gray-500 break-all">
+            🆔 Principal: {user?.id ? user.id.toString() : "Unknown"}
+          </p>
         </div>
 
         <div className="relative mt-2 flex flex-col gap-5 text-base w-screen px-32 p-6">

@@ -84,6 +84,19 @@ const DetailCampaign = () => {
     await fetchAllReview();
   };
 
+  const totalMinted = Number(campaign?.milestone ?? 0);
+
+  const totalQuantity =
+    campaign?.rewards?.reduce(
+      (sum, reward) => sum + Number(reward.quantity ?? 0),
+      0
+    ) ?? 0;
+
+  const totalInitial = totalMinted + totalQuantity;
+
+  const progressPercentage =
+    totalInitial === 0 ? 0 : (totalMinted / totalInitial) * 100;
+
   return (
     <div className="bg-black space-y-12 px-32 text-white min-h-screen p-10">
       <h1 className="text-3xl font-bold text-center mb-4">
@@ -121,18 +134,12 @@ const DetailCampaign = () => {
               <div
                 className="bg-green-500 h-2 rounded-full"
                 style={{
-                  width: `${Math.min(
-                    100,
-                    (Number(campaign?.stats.upvote) /
-                      Number(campaign?.milestone)) *
-                      100
-                  )}%`,
+                  width: `${progressPercentage}%`,
                 }}
               />
               <div className="flex justify-between">
                 <span className="font-bold">
-                  {Number(campaign?.stats.upvote)} /{" "}
-                  {Number(campaign?.milestone)}{" "}
+                  {totalMinted} / {totalQuantity + totalMinted}{" "}
                   <span className="text-emerald-700">NFT</span>
                 </span>
               </div>
@@ -227,6 +234,8 @@ const DetailCampaign = () => {
           </div>
           <div className="w-3/4">
             <Reward
+              campaignId={Number(BigInt(id!))}
+              refetchCampaign={() => fetchDetailCampaing(BigInt(id!))}
               rewards={campaign?.rewards ?? []}
               selectedIndex={selectedRewardIndex}
             />

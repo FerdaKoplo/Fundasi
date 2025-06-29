@@ -17,6 +17,9 @@ export const useToken = () => {
   const [purchaseSuccess, setPurchaseSuccess] = useState<string | null>(null);
   const [purchaseError, setPurchaseError] = useState<string | null>(null);
 
+  const [isTransferring, setIsTransferring] = useState(false);
+  const [transferError, setTransferError] = useState<string | null>(null);
+
   const { principalId, refreshUser } = useAuth();
 
   const fetchTokenBalance = async () => {
@@ -61,13 +64,90 @@ export const useToken = () => {
     }
   };
 
-  const purchaseNFT = async (nftId: number) => {
+  const transferTokenToBackend = async (amount: bigint) => {
+    if (!principalId) {
+      setTransferError("User principal not found.");
+      return;
+    }
+
+    try {
+      setIsTransferring(true);
+      setTransferError(null);
+
+      const canisterPrincipal = await Fundasi_backend.getCanisterPrincipal();
+
+      const result = await icrc1_ledger.icrc1_transfer({
+        from_subaccount: [],
+        to: {
+          owner: Principal.fromText(canisterPrincipal.toString()),
+          subaccount: [],
+        },
+        amount,
+        fee: [],
+        memo: [],
+        created_at_time: [],
+      });
+
+      if ("Err" in result) {
+        const errObj = result.Err;
+
+        let errMsg = "Unknown error";
+        if ("GenericError" in errObj) {
+          errMsg = errObj.GenericError.message;
+        } else if ("InsufficientFunds" in errObj) {
+          errMsg =
+            "Insufficient funds: balance = " +
+            errObj.InsufficientFunds.balance.toString();
+        } else if ("BadFee" in errObj) {
+          errMsg =
+            "Bad fee: expected = " + errObj.BadFee.expected_fee.toString();
+        } else if ("Duplicate" in errObj) {
+          errMsg =
+            "Duplicate transaction: id = " +
+            errObj.Duplicate.duplicate_of.toString();
+        } else if ("BadBurn" in errObj) {
+          errMsg =
+            "Bad burn: min = " + errObj.BadBurn.min_burn_amount.toString();
+        } else if ("InsufficientAllowance" in errObj) {
+          errMsg =
+            "Insufficient allowance: " +
+            (
+              errObj as { InsufficientAllowance: { allowance: bigint } }
+            ).InsufficientAllowance.allowance.toString();
+        } else if ("TemporarilyUnavailable" in errObj) {
+          errMsg = "Ledger temporarily unavailable.";
+        } else if ("TooOld" in errObj) {
+          errMsg = "Transaction too old.";
+        } else if ("CreatedInFuture" in errObj) {
+          errMsg =
+            "Transaction created in future: time = " +
+            errObj.CreatedInFuture.ledger_time.toString();
+        }
+
+        setTransferError(errMsg);
+        console.error("Transfer token error:", errMsg);
+      }
+
+      return result;
+    } catch (err) {
+      console.error("Transfer token exception:", err);
+      setTransferError("Terjadi kesalahan saat transfer token.");
+    } finally {
+      setIsTransferring(false);
+    }
+  };
+
+  const purchaseNFT = async (campaignId: number, level: string) => {
     setIsPurchasing(true);
     setPurchaseSuccess(null);
     setPurchaseError(null);
 
     try {
-      const result = await Fundasi_backend.purchaseNFT(BigInt(nftId));
+      const result = await Fundasi_backend.purchaseNFT(
+        BigInt(campaignId),
+        level
+      );
+
       if ("ok" in result) {
         setPurchaseSuccess("Berhasil membeli NFT!");
         await fetchTokenBalance();
@@ -96,6 +176,7 @@ export const useToken = () => {
     loadingBalance,
     balanceError,
     fetchTokenBalance,
+    transferTokenToBackend,
 
     // NFT purchase
     purchaseNFT,

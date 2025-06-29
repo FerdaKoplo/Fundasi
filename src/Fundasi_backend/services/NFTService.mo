@@ -113,6 +113,19 @@ module {
       }
     };
 
+    public func getAvailableNFT(
+      nfts: HashMap.HashMap<Nat, NFT.NFT>,
+      campaignId: Nat,
+      level: Text
+    ): ?NFT.NFT {
+      for (nft in nfts.vals()) {
+        if (nft.campaignId == campaignId and nft.level == level and nft.isAvailable) {
+          return ?nft;
+        };
+      };
+      return null;
+    };
+
     public func tokens(
       nfts: HashMap.HashMap<Nat, NFT.NFT>
     ) : [Nat] {

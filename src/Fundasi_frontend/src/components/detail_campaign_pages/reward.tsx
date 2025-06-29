@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { useToken } from "../../hooks/useToken";
 
 interface RewardProps {
@@ -11,16 +11,31 @@ interface RewardProps {
     nftPrice: bigint;
   }[];
   selectedIndex: number;
+  campaignId?: number;
+  refetchCampaign: () => void;
 }
 
-export const Reward: React.FC<RewardProps> = ({ rewards, selectedIndex }) => {
+export const Reward: React.FC<RewardProps> = ({
+  rewards,
+  selectedIndex,
+  refetchCampaign,
+  campaignId,
+}) => {
   const selected = rewards[selectedIndex];
   const { purchaseNFT, isPurchasing, purchaseSuccess, purchaseError } =
     useToken();
 
   const handleFund = () => {
-    purchaseNFT(selectedIndex);
+    if (campaignId !== undefined) {
+      purchaseNFT(campaignId, selected.level);
+    }
   };
+
+  useEffect(() => {
+    if (purchaseSuccess) {
+      refetchCampaign();
+    }
+  }, [purchaseSuccess]);
   return (
     <div className="flex flex-col md:flex-row gap-10 text-white">
       {/* Kartu NFT */}

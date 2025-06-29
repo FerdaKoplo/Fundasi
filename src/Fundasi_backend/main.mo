@@ -16,6 +16,7 @@ import NFT "models/NFT";
 import NFTService "services/NFTService";
 import Icrc37Types "models/ICRC37Types";
 import Icrc37Environment "services/ICRC37Environment";
+import Icrc1Types "models/ICRC1Types";
 import ICRC37 "services/ICRC37";
 import Env "env";
 import ICRC2Types "models/ICRC2Types";
@@ -51,7 +52,7 @@ actor Main {
     memo: ?[Nat8];
     from_subaccount: ?[Nat8];
     created_at_time: ?Nat64;
-     }) -> async ICRC2Types.TransferFromResult;
+     }) -> async Icrc1Types.TransferResult;
   } {
     let cfg = getConfig();
     actor (Principal.toText(cfg.tokenCanister))
@@ -192,85 +193,119 @@ actor Main {
     };
 
 
-   public shared(msg) func purchaseNFT(tokenId: Nat): async Icrc37Types.TransferResult {
-      let caller = msg.caller;
+   public shared(msg) func purchaseNFT(campaignId: Nat, level: Text): async Icrc37Types.TransferResult {
+    let caller = msg.caller;
+    let canisterPrincipal = Principal.fromActor(Main);
+    let maybeNft = NFTService.getAvailableNFT(nftMap, campaignId, level);
 
-      switch (NFTService.getNFTById(nftMap, tokenId)) {
-          case null return #Err("NFT not found");
-          case (?nft) {
-            if (nft.ownerId != Principal.fromActor(Main) or not nft.isAvailable) {
-              return #Err("NFT not available for purchase");
-            };
+    switch (maybeNft) {
+      case null return #Err("No available NFT for this reward");
+      case (?nft) {
+        if (nft.ownerId != canisterPrincipal or not nft.isAvailable) {
+          return #Err("NFT not available for purchase");
+        };
 
-            // 1. Cek saldo user
-            let account = { owner = caller; subaccount = null };
-            let tokenCanister = getTokenCanister();
-            let balance = await tokenCanister.icrc1_balance_of(account);
+        // ✅ Validasi harga minimal untuk hindari BadBurn
+        if (nft.price < 1000) {
+          return #Err("NFT price must be at least 1000 to meet min burn requirement.");
+        };
 
-            if (balance < nft.price) {
-              return #Err("Insufficient token balance");
-            };
+        // 1. Cek saldo user
+        let tokenCanister = getTokenCanister();
+        let balance = await tokenCanister.icrc1_balance_of({
+          owner = caller;
+          subaccount = null;
+        });
 
-            // 2. Transfer token dari user ke canister
-            let transferTokenResult = await tokenCanister.icrc1_transfer({
-                to = { owner = caller; subaccount = null };
-                amount = nft.price;
-                fee = null;
-                memo = null;
-                from_subaccount = null;
-                created_at_time = null;
-            });
+        if (balance < nft.price) {
+          return #Err("Insufficient token balance");
+        };
+
+        Debug.print("💰 Balance before transfer: " # Nat.toText(balance));
+        Debug.print("🎯 Target canister: " # Principal.toText(canisterPrincipal));
+        Debug.print("🎯 Transfer amount: " # Nat.toText(nft.price));
+        // 2. Transfer token ke canister
+        let transferTokenResult = await tokenCanister.icrc1_transfer({
+          to = { owner = canisterPrincipal; subaccount = null };
+          amount = nft.price;
+          fee = null;
+          memo = null;
+          from_subaccount = null;
+          created_at_time = null;
+        });
 
         switch (transferTokenResult) {
           case (#Err(err)) {
-            let errMsg = switch (err) {
-              case (#GenericError(payload)) "Token transfer failed: " # payload.message;
-              case (#InsufficientFunds(payload)) "Insufficient funds: balance = " # Nat.toText(payload.balance);
-              case (#InsufficientAllowance(payload)) "Insufficient allowance: " # Nat.toText(payload.allowance);
-              case (#BadFee(payload)) "Bad fee, expected: " # Nat.toText(payload.expected_fee);
-              case (#TooOld) "Transfer too old";
-              case (#TemporarilyUnavailable) "Service temporarily unavailable";
-              case (#CreatedInFuture(payload)) "Created in future: " # Nat64.toText(payload.ledger_time);
-              case (#Duplicate(payload)) "Duplicate transaction: " # Nat.toText(payload.duplicate_of);
-              case (#BadBurn(payload)) "Bad burn: min = " # Nat.toText(payload.min_burn_amount);
-            };
-            return #Err(errMsg);
+             let errMsg = debug_show(err);
+              Debug.print("❌ Transfer failed: " # errMsg);
+                return #Err("Token transfer failed: " # errMsg);
           };
           case (#Ok(_)) {
+            Debug.print("✅ Token transfer success!");
             // 3. Transfer NFT ke user
             let transferArg: Icrc37Types.TransferArg = {
-              from = { owner = Principal.fromActor(Main); subaccount = null };
+              from = { owner = canisterPrincipal; subaccount = null };
               to = { owner = caller; subaccount = null };
               token_ids = [nft.id];
               memo = null;
               created_at_time = null;
             };
 
-            let result = icrc37().transfer(Principal.fromActor(Main), transferArg);
-
+            let result = icrc37().transfer(canisterPrincipal, transferArg);
 
             switch (result) {
               case (#Ok(_)) {
+                // 1. Tandai NFT tidak tersedia
                 let updatedNft = { nft with isAvailable = false; ownerId = caller };
                 nftMap.put(nft.id, updatedNft);
 
-                // Simpan log
+                // 2. Log pembelian
                 purchaseLogs := Array.append(purchaseLogs, [{
                   user = caller;
                   nftId = nft.id;
                   price = nft.price;
                   time = Time.now();
                 }]);
-              };
-              case (#Err(_)) {};
-            };
 
-            return result;
+                // 3. Update campaign (milestone & reward quantity)
+                switch (campaignMap.get(nft.campaignId)) {
+                  case (?campaign) {
+                    var milestoneInc = 0;
+                    let updatedRewards = Array.map<Campaign.Rewards, Campaign.Rewards>(
+                      campaign.rewards,
+                      func(r) {
+                        Debug.print("🎯 Matching reward: r.level = " # r.level # ", nft.level = " # nft.level);
+                        Debug.print("🎯 Matching reward: r.nftPrice = " # Nat.toText(r.nftPrice) # ", nft.price = " # Nat.toText(nft.price));
+
+                        if (r.level == nft.level and r.nftPrice == nft.price and r.quantity > 0) {
+                          milestoneInc += 1;
+                          { r with quantity = r.quantity - 1 };
+                        } else r;
+                      }
+                    );
+
+                    let updatedCampaign: Campaign.Campaign = {
+                      campaign with
+                        rewards = updatedRewards;
+                        milestone = campaign.milestone + milestoneInc;
+                    };
+                    campaignMap.put(campaign.id, updatedCampaign);
+                  };
+                  case null {};
+                };
+
+                return #Ok([nft.id]);
+              };
+              case (#Err(_)) {
+                return result;
+              };
+            };
           };
         };
       };
     };
   };
+
 
     public shared(msg) func adminPurchaseNFT(tokenId: Nat, buyer: Principal): async Icrc37Types.TransferResult {
       let adminPrincipal = getConfig().adminPrincipal;
@@ -417,7 +452,11 @@ actor Main {
             userMap.put(caller, updated);
             return #ok("Token berhasil diklaim");
           };
-          case (#Err(_)) return #err("Transfer token gagal");
+          case (#Err(err)) {
+            let msg = debug_show(err);
+            Debug.print("❌ Transfer gagal saat klaim token: " # msg);
+            return #err("Transfer token gagal: " # msg);
+          };
         };
       };
     };
@@ -518,7 +557,11 @@ actor Main {
       };
     };
   };
-  
+
+  public query func getCanisterPrincipal(): async Principal {
+    Principal.fromActor(Main)
+  };
+
   public shared(msg) func getUserProfile() : async ?User.User {
     let caller = msg.caller;
     return UserService.getCurrentUser(stableUser, caller);

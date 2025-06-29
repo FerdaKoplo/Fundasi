@@ -15,6 +15,7 @@ import UserProfile from "./pages/user/profile/user-profile";
 import UpdateCampaign from "./pages/user/campaigns/update-campaign";
 import EditProfile from "./pages/user/profile/edit-profile";
 import { AuthProvider } from "./context/auth-context";
+import Loading from "./components/modal/loading";
 
 function AppRoutes() {
   const { isAuthenticated, isLoading, user } = useAuth();
