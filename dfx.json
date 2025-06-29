@@ -5,20 +5,21 @@
       "type": "motoko"
     },
     "Fundasi_frontend": {
-      "dependencies": [
-        "Fundasi_backend"
-      ],
-      "source": [
-        "src/Fundasi_frontend/dist"
-      ],
+      "dependencies": ["Fundasi_backend"],
+      "source": ["src/Fundasi_frontend/dist"],
       "type": "assets",
       "workspace": "Fundasi_frontend"
+    },
+    "icrc1_ledger": {
+      "type": "custom",
+      "candid": "ledger.did",
+      "wasm": "ic-icrc1-ledger.wasm.gz"
     }
   },
   "defaults": {
     "build": {
       "args": "",
-      "packtool": ""
+      "packtool": "mops sources"
     }
   },
   "output_env_file": ".env",

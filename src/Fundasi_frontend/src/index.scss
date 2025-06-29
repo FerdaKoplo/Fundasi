@@ -1,3 +1,39 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer utilities {
+  .green-gradient {
+    @apply bg-gradient-to-r from-[#398267] to-[#A5CC86] bg-clip-text text-transparent;
+  }
+  .black-gradient {
+    @apply bg-gradient-to-b from-[#2D2D2D] via-[#1A1A1A] to-[#111];
+  }
+
+
+  .red-gradient {
+    @apply bg-gradient-to-l from-[#000000] via-[#690202] to-[#af0000];
+    
+  .diagram-dark-green {
+  @apply bg-gradient-to-r from-[#2a5d4b] to-[#7a9b5f] bg-clip-text text-transparent;
+  }
+
+  .diagram-dark-yellow {
+  @apply bg-gradient-to-r from-[#b88b00] to-[#d1b758] bg-clip-text text-transparent;
+  }
+
+  .diagram-dark-red {
+  @apply bg-gradient-to-r from-[#8b2d2d] to-[#d66565] bg-clip-text text-transparent;
+  }
+
+  .top-light-green-gradient {
+    @apply bg-gradient-to-t from-[#398267] to-[#A5CC86] bg-clip-text text-transparent;
+  }
+  .black-gradient {
+    @apply bg-gradient-to-b from-[#2D2D2D] via-[#1A1A1A] to-[#111];
+  }
+  .light-black-gradient-text {
+    @apply bg-gradient-to-b from-[#5c5c5c] via-[#868686] to-[#111] bg-clip-text text-transparent;
+
+  }
+}
